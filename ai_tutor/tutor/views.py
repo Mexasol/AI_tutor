@@ -45,19 +45,22 @@ def home(request):
 
 
 
-# tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-2-7b-chat-hf",
-#                                           use_auth_token=True,)
+tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-2-7b-chat-hf",
+                                          use_auth_token=True,
+                                          token="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"
+                                          )
 
 
-# model = AutoModelForCausalLM.from_pretrained("meta-llama/Llama-2-7b-chat-hf",
-#                                              device_map='auto',
-#                                              torch_dtype=torch.float16,
-#                                              use_auth_token=True,
-#                                              )
+model = AutoModelForCausalLM.from_pretrained("meta-llama/Llama-2-7b-chat-hf",
+                                             device_map='auto',
+                                             torch_dtype=torch.float16,
+                                             use_auth_token=True,
+                                             token="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"
+                                             )
 
-checkpoint = "MBZUAI/LaMini-T5-738M"
-tokenizer = AutoTokenizer.from_pretrained(checkpoint, token="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")
-model = AutoModelForSeq2SeqLM.from_pretrained(checkpoint, device_map='auto', torch_dtype=torch.float32)
+# checkpoint = "MBZUAI/LaMini-T5-738M"
+# tokenizer = AutoTokenizer.from_pretrained(checkpoint, token="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")
+# model = AutoModelForSeq2SeqLM.from_pretrained(checkpoint, device_map='auto', torch_dtype=torch.float32)
 def llm_pipeline():
     pipe=pipeline("text-generation",
               model=model,
