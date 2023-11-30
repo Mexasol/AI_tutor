@@ -1,0 +1,32 @@
+
+{% extends "ai_tutor/base.html" %} 
+
+{% block title %} Profile {% endblock title %}
+{% block content %}
+{% include "ai_tutor/navbar.html" %}
+<h2 class='text-center mt-5'>Welcome </h2>
+<div class="container-fluid ">
+<div class="row mt-5">
+    <div class="col-md-6 offset-3">
+        <div class="card">
+            <div class="card-header">
+                <h1>Answer:</h1>
+                <p>{{ answer }}</p>
+
+                <form method="post" action="{% url 'process_question' %}">
+                    {% csrf_token %}
+                    <label for="question">Ask a Question:</label>
+                    <input type="text" name="question" required>
+                    <button type="submit">Submit</button>
+                </form>
+            </div>
+           
+        </div>
+    </div>
+
+
+
+</div>
+
+
+    {% endblock content %}
