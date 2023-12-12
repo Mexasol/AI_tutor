@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     "tutor",
-    'rest_framework',
+    'chatbot',
+    'social_django',
 ]
 
 MIDDLEWARE = [
@@ -50,7 +51,13 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'social_django.middleware.SocialAuthExceptionMiddleware',
 ]
+
+AUTHENTICATION_BACKENDS = (
+    'social_core.backends.google.GoogleOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
+)
 
 ROOT_URLCONF = 'ai_tutor.urls'
 
@@ -101,6 +108,20 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+# SOCIAL_AUTH_STRATEGY = 'social_django.strategy.DjangoStrategy'
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '608498746274-fsdff7thf92l2k8k2dgh02s8ccoo05ug.apps.googleusercontent.com'
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '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'
+SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_EMAILS = ['huzaifatahir7524@gmail.com']
+
+# SOCIAL_AUTH_PIPELINE = (
+#     'chatbot.pipeline.custom_auth_forbidden',
+# )
+# SOCIAL_AUTH_RAISE_EXCEPTIONS = False
+
+SOCIAL_AUTH_LOGIN_REDIRECT_URL = '/chatbot/chatbotapp/'
+
+
 
 
 # Internationalization
@@ -125,7 +146,7 @@ STATIC_ROOT = os.path.join(BASE_DIR,"staticfiles")
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
-# redirect to  home
+# redirect to  home 
 LOGIN_REDIRECT_URL = '/'
 
 
