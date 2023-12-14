@@ -1,0 +1,50 @@
+{% extends "ai_tutor/base.html" %}
+{% load static %}
+
+{% block title %}
+    Chatbot
+{% endblock title %}
+
+{% block content %}
+    {% include "ai_tutor/navbar.html" %}
+
+    <div class="chat-container">
+        <!-- Initial welcome message -->
+        <div class="default-text">
+            <h1 style="color: #033e8c;">Welcome to American High School Academy</h1>
+            <p style="color: #033e8c;">Start a conversation and explore the power of AI.<br> Your chat history will be displayed here.</p>
+        </div>
+    </div>
+
+    <div class="typing-container">
+        <div class="typing-content">
+            <div class="typing-textarea">
+                <form method="post" style="display: flex; width: 100%;">
+                    {% csrf_token %}
+                    <textarea name="question" id="chat-input" spellcheck="false" placeholder="Enter a command here" required></textarea>
+                    <button type="submit" class="material-symbols-rounded">send</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {% if question %}
+        <div class="chat-content outgoing">
+            <div class="chat-details">
+                <img src="{% static 'images/user.png' %}" alt="user-img">
+                <p>{{ question }}</p>
+            </div>
+        </div>
+    {% endif %}
+
+    {% if answer %}
+        <div class="chat-content incoming" style="margin-bottom:30px;">
+            <div class="chat-details">
+                <img src="{% static 'images/logo.png' %}" alt="chatbot-img">
+                <p>{{ answer }}</p>
+            </div>
+            <span onclick="copyResponse(this)" class="material-symbols-rounded">content_copy</span>
+        </div>
+    {% endif %}
+
+{% endblock content %}
