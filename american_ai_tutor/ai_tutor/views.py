@@ -48,15 +48,15 @@ def delete_pdf(request, pdf_id):
 
 
 
-tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-2-7b-chat-hf",
-                                          use_auth_token=True,)
+# tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-2-7b-chat-hf",
+#                                           use_auth_token=True,)
 
 
-model = AutoModelForCausalLM.from_pretrained("meta-llama/Llama-2-7b-chat-hf",
-                                             device_map='auto',
-                                             torch_dtype=torch.float16,
-                                             use_auth_token=True,
-                                             )
+# model = AutoModelForCausalLM.from_pretrained("meta-llama/Llama-2-7b-chat-hf",
+#                                              device_map='auto',
+#                                              torch_dtype=torch.float16,
+#                                              use_auth_token=True,
+#                                              )
 
 def llm_pipeline():
     pipe=pipeline("text-generation",
@@ -115,8 +115,32 @@ def profile(request):
     user_pdfs = Pdf_Model.objects.filter(user=request.user)
     return render(request, 'ai_tutor/profile.html', {'user_pdfs': user_pdfs})
 
+import csv
 
+def register_users_from_csv(csv_file_path):
+    with open(csv_file_path, mode='r') as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            first_name = row['First_Name']
+            last_name = row['Last_Name']
+            email = row['Email']
+            password = first_name  # or any other logic for password
 
+            # Check if user already exists
+            if not User.objects.filter(username=email).exists():
+                # Create user if not exists
+                user = User.objects.create_user(
+                    username=email, email=email, password=password,
+                    first_name=first_name, last_name=last_name
+                )
+                user.is_staff = False
+                user.save()
+                print(f'Account created for {email}')
+            else:
+                print(f'User with email {email} already exists.')
+
+# Call the function with the path to your CSV file
+# register_users_from_csv('D:\\Office Work\\ai_tutor\\american_ai_tutor\\ai_tutor\\users.csv')
 
 class User_Registration_view(View):
     def get(self, request):
