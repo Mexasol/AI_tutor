@@ -1,40 +1,59 @@
 {% extends "ai_tutor/base.html" %}
 {% load static %} 
+
 {% block title %} Login {% endblock %} 
 
 {% block content %}
 <style>
   label {
-    font-size: 25px !important;
+    font-size: 18px;
+  }
+
+  .form-container {
+    border: 2px solid black;
+    border-radius: 10px;
+    padding: 5rem;
+  }
+
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .forgot-password {
+    font-size: 18px;
   }
 </style>
-<div class="container ">
-  <div class="row mt-5">
-    <div class="col-sm-12 col-md-6 col-lg-6 offset-lg-3 mt-5 p-5"style="border:2px solid black;border-radius: 10px;">
+
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-sm-12 col-md-6 col-lg-6 form-container">
+      <img src="{% static 'images/logo-Color.png' %}" alt="logo" width="320px" class="d-block mx-auto mb-2">
       <h1 class="text-center">Log in</h1>
       <form action="" method="post" novalidate>
         {% csrf_token %} 
-        {% for fm in form %}
+        {% for field in form %}
         <div class="form-group">
-          {{ fm.label_tag }} {{ fm }}
-          <small class="text-danger">{{ fm.errors|striptags }}</small> <br />
+          <label for="{{ field.id_for_label }}" class="">{{ field.label }}</label>
+          {{ field }}
+          <small class="text-danger">{{ field.errors|striptags }}</small>
         </div>
         {% endfor %}
-        <small>
-          <a href="{% url 'password-reset' %}" style="font-size: 18px;"> Forget Password ?</a></small
-        >
+
+        <small class="forgot-password">
+          <a href="{% url 'password-reset' %}">Forgot Password?</a>
+        </small>
 
         <button type="submit" class="btn btn-dark btn-lg btn-block mt-4">
           Login
         </button>
 
         {% if form.non_field_errors %}
-        {% for error in form.non_field_errors %}
-        <div class="alert alert-danger" role="alert">{{ error }}</div>
-        {% endfor %}
+          {% for error in form.non_field_errors %}
+            <div class="alert alert-danger" role="alert">{{ error }}</div>
+          {% endfor %}
         {% endif %}
-
       </form>
+
       <p class="mt-4">Don't have an account? <a href="{% url 'register' %}" class="text-reset">Register here</a></p>
     </div>
   </div>

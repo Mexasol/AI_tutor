@@ -10,9 +10,13 @@ urlpatterns = [
     path('delete_pdf/<int:pdf_id>/', views.delete_pdf, name='delete_pdf'),
     path('profile/', views.profile, name='profile'),
     path('answer/', views.question_answering, name='answer'),
-    path('accounts/login/', auth_view.LoginView.as_view(template_name='ai_tutor/login.html',authentication_form=UserLoginForm) , name='login'),
+    # path('accounts/login/', auth_view.LoginView.as_view(template_name='ai_tutor/login.html',authentication_form=UserLoginForm) , name='login'),
+    path('accounts/login/', views.UserLoginView.as_view(), name='login'),
+    path('verify-otp/', views.verify_otp, name='verify_otp'),
     path('register/', views.User_Registration_view.as_view(), name='register'),
     path('logout/', auth_view.LogoutView.as_view(next_page='index'), name='logout'),
+    # path('logout/', views.CustomLogoutView.as_view(), name='logout'),
+
     ############################# End Account Login ###################################
     ############################# Change Password #####################################
     path('passwordchange/', auth_view.PasswordChangeView.as_view(template_name='ai_tutor/passwordchange.html',form_class=UserPasswordChangeForm,success_url='/passwordchangedone/'), name='password-change'),

@@ -18,7 +18,10 @@
       <div class="panel panel-default">
         <div class="panel-body">
             {% if user.is_authenticated %}
-            <div class="alert alert-success" style="color:#000;background-image: radial-gradient(at center center, #ffdc7c 0%, #dda200 100%);border: none;">Welcome to our Website <b> {{ request.user }}</b></div>
+            <div class="alert alert-success alert-dismissible" style="color:#000;background-image: radial-gradient(at center center, #ffdc7c 0%, #dda200 100%);border: none;">
+                <a href="#" class="close text-decoration-none" data-dismiss="alert" aria-label="close">&times;</a>
+                Welcome to our Website <b> {{ request.user }}</b>
+            </div>
             {% endif %}
         </div>
       </div>
@@ -26,40 +29,49 @@
   </div>
 </div>
 {% if user.is_authenticated %}
-<div class="container mt-5 border rounded p-5 bg-light shadow" style="width:400px">
-    {% if messages %}
-        {% for message in messages %}
-            <div class="text-center alert alert-success mb-3">{{message}}</div>
-        {% endfor %}
+    {% if user.is_staff %}
+        <div class="container border rounded p-5 bg-light shadow" style="width:400px">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="text-center alert alert-success mb-3">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+            <h3 class="text-center" style="color: #033e8c;">Upload Documents</h3>
+            <form action="" method="post" class="mt-3" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="mt-2">
+                    <label for="pdf" style="font-size: 13px;">Documents</label>
+                    <br>
+                    <input required multiple type="file" name="pdf" id="pdf" onchange="showFileNames()" class="form-control">
+                </div>
+                <div class="mt-2">
+                    <label for="image" style="font-size: 13px;">PDF Names:</label>
+                    <br>
+                    {% for document in document_names %}
+                        <p>{{ document }}</p>
+                    {% endfor %}
+                </div>
+                <div class="d-grid mt-5 gap-2">
+                    <button class="btn btn-primary" style="background-color: #033e8c; border: none; font-size: 18px;">Upload</button>
+                </div>
+            </form>
+        </div>
+    {% else %}
+        <div class="container     p-5">
+            <div class="default-text">
+                <h1 style="color: #033e8c;">Welcome to American High School Academy</h1>
+                <p style="color: #033e8c;">Start a conversation and explore the power of AI</p>
+                <!-- button -->
+                <a href="{% url 'answer' %}" class="btn btn-primary" style="background-color: #033e8c; border: none;">Get Started</a>
+            </div>
+        </div>
     {% endif %}
-    <h3 class="text-center" style="color: #033e8c;">Upload Documents</h3>
-    <form action="" method="post" class="mt-3" enctype="multipart/form-data">
-        {% csrf_token %}
-        <div class="mt-2">
-            <label for="pdf" style="font-size: 13px;">Documents</label>
-            <br>
-            <input required multiple type="file" name="pdf" id="pdf" onchange="showFileNames()" class="form-control">
-        </div>
-        <div class="mt-2">
-            <label for="image" style="font-size: 13px;">PDF Names:</label>
-            <br>
-            {% for document in document_names %}
-            <p>{{document}}</p>
-            {% endfor %}
-            
-        <div class="d-grid mt-5 gap-2">
-            <button class="btn btn-primary " style="background-color: #033e8c;border: none; font-size: 18px;">Upload</button>
-        </div>
-    </form>
-    
-</div>
 {% else %}
-<div class="container mt-5 border rounded p-5 bg-light shadow" style="width:400px">
-    <h3 class="text-center">You must be logged in to upload files. <a href="{% url 'login' %}">login</a></h3>
-    
-</div>
+    <div class="container mt-5 border rounded p-5 bg-light shadow" style="width:400px">
+        <h3 class="text-center">You must be logged in to upload files. <a href="{% url 'login' %}">Login</a></h3>
+    </div>
+{% endif %}
 
     
-{% endif %}
 
 {% endblock content %}

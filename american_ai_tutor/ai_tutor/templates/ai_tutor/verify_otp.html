@@ -1,6 +1,6 @@
 {% extends "ai_tutor/base.html" %}
 {% load static %}
-{% block title %} Register {% endblock %}
+{% block title %} OTP Verification {% endblock %}
 {% block content %}
 
 <style>
@@ -8,21 +8,27 @@
     font-size: 25px !important;
   }
 </style>
-<div class="container ">
+<div class="container">
   <div class="row mt-5">
     <div class="col-sm-12 col-md-6 col-lg-6 offset-lg-3 mt-2 p-5" style="border:2px solid black;border-radius: 10px;">
       <img src="{% static 'images/logo-Color.png' %}" alt="logo" width="320px" class="d-block mx-auto mb-2">
-      <h1 class="text-center">Registration</h1>
-      <form action="" method="post" novalidate>
-        {% csrf_token %} 
-        {% for fm in form %}
-        <div class="form-group">
-          {{ fm.label_tag }} {{ fm }}
-          <small class="text-danger">{{ fm.errors|striptags }}</small> <br />
-        </div>
+      <h1 class="text-center">OTP Verification</h1>
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-info" role="alert">{{ message }}</div>
         {% endfor %}
+      {% endif %}
+
+      <form action="{% url 'verify_otp' %}" method="post" novalidate>
+        {% csrf_token %}
+        <div class="form-group">
+          <label for="otp">Enter OTP:</label>
+          <input type="text" id="otp" name="otp" class="form-control" required>
+        </div>
+
         <button type="submit" class="btn btn-dark btn-lg btn-block mt-2">
-          Register
+          Verify OTP
         </button>
 
         {% if form.non_field_errors %}
@@ -31,11 +37,9 @@
         {% endfor %}
         {% endif %}
       </form>
-      <p class="mt-4">Already have an account <a href="{% url 'login' %}" class="text-reset">Login here</a></p>
+      <p class="mt-4">Didn't receive OTP? <a href="#" class="text-reset">Resend OTP</a></p>
     </div>
   </div>
 </div>
 
 {% endblock content %}
-
-
