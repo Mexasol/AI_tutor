@@ -1,30 +1,27 @@
 from django.shortcuts import render,redirect,get_object_or_404
-import pyotp
 from django.core.mail import send_mail
-from django.http import HttpResponseBadRequest
 from django.contrib import messages
-from .forms import UserRegisterForm,UserPasswordChangeForm,UserLoginForm
-from django.contrib.auth import authenticate
+from .forms import UserRegisterForm
 from django.views import View
 from .models import Pdf_Model
 from django.contrib.auth.decorators import login_required
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM,AutoModelForCausalLM
-from transformers import pipeline
-from django.urls import reverse_lazy
-from django.contrib.auth.views import LoginView
-from django.contrib.auth import login
-import torch
-from langchain.embeddings import SentenceTransformerEmbeddings
-from langchain.vectorstores import Chroma
-from langchain.llms import HuggingFacePipeline
-from langchain.chains import RetrievalQA
-from langchain.document_loaders import PyPDFLoader,PyPDFDirectoryLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
 from django.conf import settings
 from django.contrib.auth.models import User, Group, Permission
 import os
-
-# Import your process_answer function here
+from django.http import JsonResponse
+import threading
+import queue
+from langchain.document_loaders import PyPDFLoader,PyPDFDirectoryLoader
+from langchain.llms import OpenAI
+from langchain.chains.question_answering import load_qa_chain
+from langchain.text_splitter import CharacterTextSplitter
+from langchain.vectorstores import Chroma
+from langchain.embeddings import OpenAIEmbeddings
+from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain.chains import ConversationalRetrievalChain
+from langchain.chains import RetrievalQA
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.chat_models import ChatOpenAI
 
 # Create your views here.
 pdfs_dir = os.path.join(settings.MEDIA_ROOT, 'pdfs')
@@ -46,55 +43,31 @@ def delete_pdf(request, pdf_id):
     pdf.delete()
     return redirect('profile')
 
-
-
-# tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-2-7b-chat-hf",
-#                                           use_auth_token=True,)
-
-
-# model = AutoModelForCausalLM.from_pretrained("meta-llama/Llama-2-7b-chat-hf",
-#                                              device_map='auto',
-#                                              torch_dtype=torch.float16,
-#                                              use_auth_token=True,
-#                                              )
-
-def llm_pipeline():
-    pipe=pipeline("text-generation",
-              model=model,
-              tokenizer=tokenizer,
-              torch_dtype=torch.bfloat16,
-              device_map='auto',
-              max_new_tokens=512,
-              min_new_tokens=-1,
-              top_k=30
-
-    )
-    local_llm = HuggingFacePipeline(pipeline=pipe)
-    return local_llm
-documents_load_pdf = []
-
-
-
+OPENAI_API_KEY= ""
 def qa_llm():
-  llm = llm_pipeline()
-  pdfs = Pdf_Model.objects.all()
-  documents_pdf = []
-  for pdf in pdfs:
-    pdf_path = pdf.file.path  
-    loader = PyPDFLoader(pdf_path) 
-    document = loader.load()
-    documents_pdf.append(document)
+    pdfs = Pdf_Model.objects.all()
+    documents_pdf = []
+    for pdf in pdfs:
+        pdf_path = pdf.file.path
+        loader = PyPDFLoader(pdf_path)
+        document = loader.load()
+        documents_pdf.append(document)
 
-  loader = PyPDFDirectoryLoader(pdfs_dir)
-  data = loader.load()
-  text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=20)
-  docs = text_splitter.split_documents(data)
-  print(len(docs))
-  embeddings = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
-  db = Chroma.from_documents(docs, embeddings)
-  retriever = db.as_retriever()
-  qa = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=retriever, return_source_documents=True)
-  return qa
+    loader = PyPDFDirectoryLoader(pdfs_dir)
+    data = loader.load()
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=2200, chunk_overlap=150)
+    docs = text_splitter.split_documents(data)
+    print(len(docs))
+    llm = ChatOpenAI(
+        openai_api_key=OPENAI_API_KEY,
+        model_name='gpt-3.5-turbo',
+        temperature=0.0
+    )   
+    embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
+    db = Chroma.from_documents(docs, embeddings)
+    retriever = db.as_retriever()
+    qa = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=retriever, return_source_documents=True)
+    return qa
  
 
 @login_required
@@ -102,13 +75,28 @@ def question_answering(request):
     if request.method == 'POST':
         question = request.POST.get('question')
         print(question)
+        
+        chat_history = request.session.get('chat_history', [])
         qa = qa_llm()
         generated_text = qa(question)
         answer = generated_text['result']
-        return render(request, 'ai_tutor/chatbot.html', {'answer': answer})
+
+        if answer:
+            print('----------------------------------')
+            print(answer)
+            print('----------------------------------')
+            chat_history.append({'question': question, 'answer': answer})
+            request.session['chat_history'] = chat_history
+            request.session.save()
+        else:
+            answer = "No matching found."
+
+        return JsonResponse({'answer': answer, 'chat_history': chat_history})
     else:
         return render(request, 'ai_tutor/chatbot.html', {'answer': ''})
-    
+
+
+
 
 @login_required
 def profile(request):
@@ -163,58 +151,3 @@ class User_Registration_view(View):
         else:
             return render(request, 'ai_tutor/register.html', {'form': form})
 
-class UserLoginView(View):
-    template_name = 'ai_tutor/login.html'
-    form_class = UserLoginForm
-
-    def get(self, request, *args, **kwargs):
-        return render(request, self.template_name, {'form': self.form_class()})
-
-    def post(self, request, *args, **kwargs):
-        form = self.form_class(request, data=request.POST)
-        if form.is_valid():
-            username = form.cleaned_data['username']
-            password = form.cleaned_data['password']
-            user = authenticate(request, username=username, password=password)
-            if user is not None:
-                login(request, user)
-                totp = pyotp.TOTP(pyotp.random_base32())
-                otp_value = totp.now()
-                totp_key = totp.secret
-                print('TOTP key:', totp_key, 'OTP value:', otp_value)
-                request.session['totp_key'] = totp_key
-
-                # Send TOTP key via email
-                subject = 'Your TOTP Key'
-                message = f'Your TOTP key is: {otp_value}'
-                from_email = 'huzaifatahir7524@gmail.com'
-                to_email = [user.username]  
-
-                send_mail(subject, message, from_email, to_email, fail_silently=False)
-
-                return redirect('verify_otp')
-        return render(request, self.template_name, {'form': form})
-        
-
-    
-def verify_otp(request):
-    totp_key = request.session.get('totp_key')
-    if not totp_key:
-        # Handle the case where there's no TOTP key in the session
-        return HttpResponseBadRequest("Invalid TOTP key")
-
-    if request.method == 'POST':
-        submitted_otp = request.POST.get('otp')
-
-        # Verify the submitted OTP
-        totp = pyotp.TOTP(totp_key)
-        if totp.verify(submitted_otp):
-            # OTP verification successful, clear the TOTP key from the session
-            del request.session['totp_key']
-
-            return redirect('index')
-        else:
-            # OTP verification failed, you may want to handle this accordingly
-            return render(request, 'ai_tutor/verify_otp.html', {'error_message': 'Invalid OTP'})
-
-    return render(request, 'ai_tutor/verify_otp.html')

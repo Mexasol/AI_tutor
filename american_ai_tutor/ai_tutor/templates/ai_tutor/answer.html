@@ -1,32 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Question Answering</title>
+    <!-- Add jQuery library -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+</head>
+<body>
+    <h1>Question Answering</h1>
+    
+    <form id="qaForm" method="post">
+        {% csrf_token %}
+        <label for="question">Enter your question:</label>
+        <input type="text" id="question" name="question" required>
+        <button type="button" id="submitQuestion">Submit</button>
+    </form>
 
-{% extends "ai_tutor/base.html" %} 
-
-{% block title %} Profile {% endblock title %}
-{% block content %}
-{% include "ai_tutor/navbar.html" %}
-<h2 class='text-center mt-5'>Welcome </h2>
-<div class="container-fluid ">
-<div class="row mt-5">
-    <div class="col-md-6 offset-3">
-        <div class="card">
-            <div class="card-header">
-                <h1>Answer:</h1>
-                <p>{{ answer }}</p>
-
-                <form method="post">
-                    {% csrf_token %}
-                    <label for="question">Ask a Question:</label>
-                    <input type="text" name="question" required>
-                    <button type="submit">Submit</button>
-                </form>
-            </div>
-           
-        </div>
-    </div>
-
-
-
-</div>
-
-
-    {% endblock content %}
+</body>
+</html>

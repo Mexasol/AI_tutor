@@ -39,6 +39,7 @@ body {
   overflow-y: auto;
   max-height: 100vh;
   padding-bottom: 200px;
+  height: 100%;
 }
 
 :where(.chat-container, textarea)::-webkit-scrollbar {

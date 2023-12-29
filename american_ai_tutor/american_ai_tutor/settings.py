@@ -39,7 +39,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'ai_tutor',
-    'social_django',
     "corsheaders",
 ]
 
@@ -98,12 +97,12 @@ WSGI_APPLICATION = 'american_ai_tutor.wsgi.application'
 # }
 
 DATABASES = {
-    'default': {
+    'default': {  
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'myaitutor',
-        'USER': 'aitutorapp',
+        'NAME': 'myaiapp',
+        'USER': 'postgres',
         'PASSWORD': 'aitutor123',
-        'HOST': 'aitutor.c3wuqkeoudy7.ap-south-1.rds.amazonaws.com',
+        'HOST': 'ai-tutor-application.c3wuqkeoudy7.ap-south-1.rds.amazonaws.com',
         'PORT': '5432',
     }   
 }
@@ -127,16 +126,16 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-AUTHENTICATION_BACKENDS = (
-    'social_core.backends.google.GoogleOAuth2',
-    'django.contrib.auth.backends.ModelBackend',
-)
+# AUTHENTICATION_BACKENDS = (
+#     'social_core.backends.google.GoogleOAuth2',
+#     'django.contrib.auth.backends.ModelBackend',
+# )
 
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '608498746274-fsdff7thf92l2k8k2dgh02s8ccoo05ug.apps.googleusercontent.com'
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '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'
-SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_EMAILS = ['huzaifatahir7524@gmail.com']
+# SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '608498746274-fsdff7thf92l2k8k2dgh02s8ccoo05ug.apps.googleusercontent.com'
+# SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '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'
+# SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_EMAILS = ['huzaifatahir7524@gmail.com']
 
-SOCIAL_AUTH_LOGIN_REDIRECT_URL = '/chatbot'
+# SOCIAL_AUTH_LOGIN_REDIRECT_URL = '/chatbot'
 
 
 
@@ -175,7 +174,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_PORT = 587
+EMAIL_HOST_PORT = 587   
 EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
 EMAIL_HOST_USER = 'huzaifatahir7524@gmail.com'
-EMAIL_HOST_PASSWORD = 'fuvwwhoucsefclbt'
+EMAIL_HOST_PASSWORD = 'pbjp akps atva looy'
+        

@@ -3,22 +3,23 @@
 {% block title %} Register {% endblock %}
 {% block content %}
 
+
 <style>
   label {
-    font-size: 25px !important;
+    font-size: 15px !important;
   }
 </style>
-<div class="container ">
+{% include "ai_tutor/navbar.html" %}
+<div class="container mb-5 ">
   <div class="row mt-5">
-    <div class="col-sm-12 col-md-6 col-lg-6 offset-lg-3 mt-2 p-5" style="border:2px solid black;border-radius: 10px;">
-      <img src="{% static 'images/logo-Color.png' %}" alt="logo" width="320px" class="d-block mx-auto mb-2">
+    <div class="col-sm-12 col-md-6 col-lg-6 offset-lg-3 mt-2 p-5" style="border:2px solid black;border-radius: 10px; height: 630px;">
       <h1 class="text-center">Registration</h1>
       <form action="" method="post" novalidate>
         {% csrf_token %} 
         {% for fm in form %}
-        <div class="form-group">
+        <div class="form-group" >
           {{ fm.label_tag }} {{ fm }}
-          <small class="text-danger">{{ fm.errors|striptags }}</small> <br />
+          <small class="text-danger">{{ fm.errors|striptags }}</small>
         </div>
         {% endfor %}
         <button type="submit" class="btn btn-dark btn-lg btn-block mt-2">
