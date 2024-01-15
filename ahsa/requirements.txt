@@ -1,0 +1,8 @@
+langchain
+openai
+pypdf
+chromadb
+tiktoken
+django
+django-cors-headers
+PyMuPDF
