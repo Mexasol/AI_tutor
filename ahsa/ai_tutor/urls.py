@@ -1,0 +1,35 @@
+from django.urls import path
+from . import views
+from django.contrib.auth import views as auth_view
+from .forms import UserLoginForm,UserPasswordChangeForm,UserPasswordResetForm,UserSetPasswordForm
+from django.conf import settings
+from django.conf.urls.static import static
+
+urlpatterns = [
+    path('', views.home, name='index'),
+    path('delete_pdf/<int:pdf_id>/', views.delete_pdf, name='delete_pdf'),
+    path('profile/', views.profile, name='profile'),
+    path('answer/', views.question_answering, name='answer'),
+    path('stats/', views.Academy_stats, name='stats'),
+    path('banned_words/', views.Banneds_words, name='banned_words'),
+    path('banned_words/delete/<int:banned_word_id>/', views.delete_banned_word, name='delete_banned_word'),
+    path('banned_words/edit/<int:banned_word_id>/', views.edit_banned_word, name='edit_banned_word'),
+    path('accounts/login/', auth_view.LoginView.as_view(template_name='ai_tutor/login.html',authentication_form=UserLoginForm) , name='login'),
+    # path('accounts/login/', views.UserLoginView.as_view(), name='login'),
+    # path('verify-otp/', views.verify_otp, name='verify_otp'),
+    path('register/', views.User_Registration_view.as_view(), name='register'),
+    path('logout/', auth_view.LogoutView.as_view(next_page='index'), name='logout'),
+    # path('logout/', views.CustomLogoutView.as_view(), name='logout'),
+
+    ############################# End Account Login ###################################
+    ############################# Change Password #####################################
+    path('passwordchange/', auth_view.PasswordChangeView.as_view(template_name='ai_tutor/passwordchange.html',form_class=UserPasswordChangeForm,success_url='/passwordchangedone/'), name='password-change'),
+    path('passwordchangedone/', auth_view.PasswordChangeDoneView.as_view(template_name='ai_tutor/passwordchangedone.html'), name='password-change-done'),
+    ############################# End Change Password ################################
+    ############################# Reset Password #####################################
+
+    path('password-reset/', auth_view.PasswordResetView.as_view(template_name='ai_tutor/password_reset.html',html_email_template_name='ai_tutor/password_reset_email.html',form_class=UserPasswordResetForm), name='password-reset'),
+    path('password-reset/done/', auth_view.PasswordResetDoneView.as_view(template_name='ai_tutor/password_reset_done.html'), name='password_reset_done'),
+    path('password-reset-confirm/<uidb64>/<token>/', auth_view.PasswordResetConfirmView.as_view(template_name='ai_tutor/password_reset_confirm.html',form_class=UserSetPasswordForm), name='password_reset_confirm'),
+    path('password-reset-complete/', auth_view.PasswordResetCompleteView.as_view(template_name='ai_tutor/password_reset_complete.html'), name='password_reset_complete'),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

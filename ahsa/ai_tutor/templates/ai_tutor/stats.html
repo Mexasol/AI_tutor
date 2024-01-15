@@ -1,0 +1,122 @@
+{% extends "ai_tutor/base.html" %} 
+{% load static %} {% block title %} Stats {% endblock title %}
+{% block content %}
+
+<!-- create navigation bar -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+<div class="container-fluid p-0">
+    {% include 'ai_tutor/navbar.html' %}
+</div>
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-2">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    {% if  user.is_superuser %}
+                    <div class="alert alert-success alert-dismissible" style="color:#000;">
+                        
+                        User Count: {{ user_count }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-2">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    {% if  user.is_superuser %}
+                    <div class="alert alert-success alert-dismissible" style="color:#000;">
+                        
+                        User Count: {{ staff_count }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    {% if  user.is_superuser %}
+                    <div class="alert alert-success alert-dismissible" style="color:#000;">
+                        
+                        Banned Words Count: {{ banned_words_count }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mt-5">
+        <div class="col-4">
+            <canvas id="barChart" width="400" height="200"></canvas>
+        </div>
+        <div class="col-4">
+            <canvas id="pieChart" width="400" height="200"></canvas>
+        </div>
+        <div class="col-4">
+            <canvas id="lineChart" width="400" height="200"></canvas>
+        </div>
+    </div>
+</div>
+<script>
+    var statsData = {{ data|safe }};
+
+    // Bar Chart
+    var barCtx = document.getElementById('barChart').getContext('2d');
+    var barChart = new Chart(barCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Total Users', 'Staff Users', 'Banned Words'],
+            datasets: [{
+                label: 'Count',
+                data: [statsData.user_count, statsData.staff_count, statsData.banned_words_count],
+                backgroundColor: ['rgba(75, 192, 192, 0.2)', 'rgba(255, 99, 132, 0.2)', 'rgba(153, 102, 255, 0.2)'],
+                borderColor: ['rgba(75, 192, 192, 1)', 'rgba(255, 99, 132, 1)', 'rgba(153, 102, 255, 1)'],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Pie Chart
+    var pieCtx = document.getElementById('pieChart').getContext('2d');
+    var pieChart = new Chart(pieCtx, {
+        type: 'pie',
+        data: {
+            labels: ['Total Users', 'Staff Users', 'Banned Words'],
+            datasets: [{
+                data: [statsData.user_count, statsData.staff_count, statsData.banned_words_count],
+                backgroundColor: ['rgba(75, 192, 192, 0.2)', 'rgba(255, 99, 132, 0.2)', 'rgba(153, 102, 255, 0.2)'],
+                borderColor: ['rgba(75, 192, 192, 1)', 'rgba(255, 99, 132, 1)', 'rgba(153, 102, 255, 1)'],
+                borderWidth: 1
+            }]
+        }
+    });
+
+    // Line Chart
+    var lineCtx = document.getElementById('lineChart').getContext('2d');
+    var lineChart = new Chart(lineCtx, {
+        type: 'line',
+        data: {
+            labels: ['Total Users', 'Staff Users', 'Banned Words'],
+            datasets: [{
+                label: 'Count',
+                data: [statsData.user_count, statsData.staff_count, statsData.banned_words_count],
+                borderColor: 'rgba(255, 206, 86, 1)',
+                borderWidth: 2,
+                fill: false
+            }]
+        }
+    });
+</script>
+{% endblock content %}

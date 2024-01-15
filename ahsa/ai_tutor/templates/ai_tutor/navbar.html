@@ -1,0 +1,55 @@
+<!-- navbar -->
+{% load static %}
+<!-- Updated Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark pl-5 pr-5" style="background-color: #52231b;">
+    <a class="navbar-brand ml-5" href="{% url 'index' %}"><img src="{% static 'images/logo-white.png' %}" alt="logo" width="200"></a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse mr-5" id="navbarNav">
+        <ul class="navbar-nav ml-auto">
+            {% if user.is_authenticated %}
+                <!-- if user is superuser -->
+                {% if user.is_superuser %}
+                <li class="nav-item active">
+                    <a class="nav-link" href="{% url 'register' %}">Register User <span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="{% url 'stats' %}">Statistics <span class="sr-only">(current)</span></a>
+                </li>
+                {% endif %}
+                {% if user.is_staff %}
+                    <!-- Show Home Page and Chatbot Page for Staff -->
+                    <li class="nav-item active">
+                        <a class="nav-link" href="{% url 'banned_words' %}">Banned Words <span class="sr-only">(current)</span></a>
+                    </li>
+                    <li class="nav-item active">
+                        <a class="nav-link" href="{% url 'index' %}">Upload Documents <span class="sr-only">(current)</span></a>
+                    </li>
+                    <li class="nav-item active">
+                        <a class="nav-link" href="{% url 'answer' %}">Chatbot <span class="sr-only">(current)</span></a>
+                    </li>
+                {% else %}
+                    <!-- Redirect Non-Staff to Chatbot Page -->
+                    <li class="nav-item active">
+                        <a class="nav-link" href="{% url 'answer' %}">Chatbot <span class="sr-only">(current)</span></a>
+                    </li>
+                {% endif %}
+                <li class="nav-item dropdown active">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        {{ user.username }}
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <a class="dropdown-item" href="{% url 'profile' %}">Profile</a>
+                        <a class="dropdown-item" href="{% url 'logout' %}">Logout</a>
+                    </div>
+                </li>                
+            {% else %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'login' %}">Login</a>
+                </li>
+            {% endif %}
+        </ul>
+    </div>
+</nav>
+
