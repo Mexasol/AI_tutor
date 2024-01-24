@@ -14,6 +14,7 @@ urlpatterns = [
     path('banned_words/', views.Banneds_words, name='banned_words'),
     path('banned_words/delete/<int:banned_word_id>/', views.delete_banned_word, name='delete_banned_word'),
     path('banned_words/edit/<int:banned_word_id>/', views.edit_banned_word, name='edit_banned_word'),
+    path('staffs/', views.staff_chatbot, name='staffs'),
     path('accounts/login/', auth_view.LoginView.as_view(template_name='ai_tutor/login.html',authentication_form=UserLoginForm) , name='login'),
     # path('accounts/login/', views.UserLoginView.as_view(), name='login'),
     # path('verify-otp/', views.verify_otp, name='verify_otp'),

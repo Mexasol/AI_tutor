@@ -20,3 +20,20 @@ class bannend_word(models.Model):
         return len(self.word)
     def __str__(self):
         return f"{self.word}"
+    
+
+
+
+class Feedback(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    question = models.TextField(null=True, blank=True)
+    response = models.TextField(null=True, blank=True)
+    is_positive = models.BooleanField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.question[:50]}"
+
+    class Meta:
+        ordering = ['-created_at']
+

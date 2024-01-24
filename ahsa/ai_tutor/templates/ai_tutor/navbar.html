@@ -7,35 +7,38 @@
         <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse mr-5" id="navbarNav">
-        <ul class="navbar-nav ml-auto">
+        <ul class="navbar-nav ml-auto" style="font-size: 16px; font-family: 'Roboto', sans-serif !important;">
             {% if user.is_authenticated %}
                 <!-- if user is superuser -->
                 {% if user.is_superuser %}
-                <li class="nav-item active">
+                <li class="nav-item active" style="font-size: 16px; font-family: 'Roboto', sans-serif !important;">
                     <a class="nav-link" href="{% url 'register' %}">Register User <span class="sr-only">(current)</span></a>
                 </li>
-                <li class="nav-item active">
+                <li class="nav-item active" style="font-size: 16px; font-family: 'Roboto', sans-serif !important;">
                     <a class="nav-link" href="{% url 'stats' %}">Statistics <span class="sr-only">(current)</span></a>
                 </li>
                 {% endif %}
                 {% if user.is_staff %}
                     <!-- Show Home Page and Chatbot Page for Staff -->
-                    <li class="nav-item active">
+                    <li class="nav-item active" style="font-size: 16px; font-family: 'Roboto', sans-serif !important;">
                         <a class="nav-link" href="{% url 'banned_words' %}">Banned Words <span class="sr-only">(current)</span></a>
                     </li>
-                    <li class="nav-item active">
+                    <li class="nav-item active" style="font-size: 16px; font-family: 'Roboto', sans-serif !important;">
+                        <a class="nav-link" href="{% url 'staffs' %}">Staff Chatbot <span class="sr-only">(current)</span></a>
+                    </li>
+                    <li class="nav-item active" style="font-size: 16px; font-family: 'Roboto', sans-serif !important;">
                         <a class="nav-link" href="{% url 'index' %}">Upload Documents <span class="sr-only">(current)</span></a>
                     </li>
-                    <li class="nav-item active">
-                        <a class="nav-link" href="{% url 'answer' %}">Chatbot <span class="sr-only">(current)</span></a>
+                    <li class="nav-item active" style="font-size: 16px; font-family: 'Roboto', sans-serif !important;">
+                        <a class="nav-link" href="{% url 'answer' %}">Student Chatbot <span class="sr-only">(current)</span></a>
                     </li>
                 {% else %}
                     <!-- Redirect Non-Staff to Chatbot Page -->
-                    <li class="nav-item active">
+                    <li class="nav-item active" style="font-size: 16px; font-family: 'Roboto', sans-serif !important;">
                         <a class="nav-link" href="{% url 'answer' %}">Chatbot <span class="sr-only">(current)</span></a>
                     </li>
                 {% endif %}
-                <li class="nav-item dropdown active">
+                <li class="nav-item dropdown active" style="font-size: 16px; font-family: 'Roboto', sans-serif !important;">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         {{ user.username }}
                     </a>

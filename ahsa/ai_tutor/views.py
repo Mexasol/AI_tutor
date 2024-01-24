@@ -4,9 +4,11 @@ import re
 import csv
 import fitz
 import json
+import openai
+# import requests
 import concurrent.futures
 # django  imports
-from .models import Pdf_Model,bannend_word
+from .models import Pdf_Model,bannend_word,Feedback
 from django.views import View
 from django.conf import settings
 from django.contrib import messages
@@ -19,30 +21,21 @@ from django.shortcuts import render,redirect,get_object_or_404
 
 # langchain imports
 from langchain.chains import RetrievalQA
-from langchain.vectorstores import Chroma
-from langchain.chat_models import ChatOpenAI
+from langchain_community.vectorstores import Chroma
+from langchain_community.chat_models import ChatOpenAI
 from langchain.docstore.document import Document
-from langchain.embeddings import OpenAIEmbeddings
+from langchain_community.embeddings import OpenAIEmbeddings
 from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain.chains import ConversationalRetrievalChain
-from langchain_community.vectorstores.chroma import Chroma
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.document_loaders import PyPDFLoader,PyPDFDirectoryLoader
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM,AutoModelForCausalLM
-from transformers import pipeline
-from langchain.embeddings import SentenceTransformerEmbeddings
-from langchain.llms import HuggingFacePipeline
-import torch
+from langchain.prompts import PromptTemplate
+# from langchain.chains import ConversationalRetrievalChain
+# from langchain.text_splitter import RecursiveCharacterTextSplitter
+# from langchain.document_loaders import PyPDFLoader,PyPDFDirectoryLoader
 
-tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-2-7b-chat-hf",
-                                          use_auth_token=True,)
+OPENAI_API_KEY= "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"
 
+openai_api_key = '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       '
+openai.api_key = openai_api_key
 
-model = AutoModelForCausalLM.from_pretrained("meta-llama/Llama-2-7b-chat-hf",
-                                             device_map='auto',
-                                             torch_dtype=torch.float16,
-                                             use_auth_token=True,
-                                             )  
 # Create your views here.
 pdfs_dir = os.path.join(settings.MEDIA_ROOT, 'pdfs')
 @login_required
@@ -55,6 +48,7 @@ def home(request):
         documents_list = [Pdf_Model(file=document, user=user) for document in documents]
         Pdf_Model.objects.bulk_create(documents_list)
         print("Uploaded PDF names:", document_names)
+        # initialize_system()
         messages.success(request, "PDF Uploaded")
     return render(request, 'ai_tutor/index.html', {'document_names': document_names})
 
@@ -63,117 +57,6 @@ def delete_pdf(request, pdf_id):
     pdf.delete()
     return redirect('profile')
 
-
-def extract_text_from_pdf(pdf_path):
-    doc = fitz.open(pdf_path)
-    text = ''
-
-    for page_num in range(doc.page_count):
-        page = doc[page_num]
-        text += page.get_text()
-
-    doc.close()
-    return text
-
-def clean_text(text):
-    cleaned_text = re.sub(r'\s+', ' ', text).strip()
-    cleaned_text = re.sub(r'\s*([.,;!?])\s*', r'\1 ', cleaned_text)
-    cleaned_text = re.sub(r' +', ' ', cleaned_text)
-    cleaned_text = re.sub(r'CHAP TER \d+', r'\n\g<0>', cleaned_text)
-
-    return cleaned_text
-
-def split_text(text, chunk_size=1000, chunk_overlap=20):
-    chunks = [text[i:i+chunk_size] for i in range(0, len(text), chunk_size - chunk_overlap)]
-    return chunks
-
-def process_pdf(pdf_model):
-    pdf_text = extract_text_from_pdf(pdf_model.file.path)
-    cleaned_text = clean_text(pdf_text)
-    chunks = split_text(cleaned_text)
-
-    # Create Document objects from chunks
-    docs = [Document(page_content=chunk) for chunk in chunks]
-
-    return docs
-
-global_documents_pdf = None
-global_qa = None
-
-
-def llm_pipeline():
-    pipe=pipeline("text-generation",
-              model=model,
-              tokenizer=tokenizer,
-              torch_dtype=torch.bfloat16,
-              device_map='auto',
-              max_new_tokens=512,
-              min_new_tokens=-1,
-              top_k=30
-
-    )
-    local_llm = HuggingFacePipeline(pipeline=pipe)
-    return local_llm
-
-
-def initialize_system():
-    global global_documents_pdf, global_qa
-
-    pdfs = Pdf_Model.objects.all()
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        global_documents_pdf = [doc for sublist in executor.map(process_pdf, pdfs) for doc in sublist]
-
-    # Initialize the QA model here
-    llm = llm_pipeline()
-    embeddings = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
-    db = Chroma.from_documents(global_documents_pdf, embeddings)
-    retriever = db.as_retriever(search_kwargs={"k": 3})
-    global_qa = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=retriever, return_source_documents=True)
-
-# Prompt for the chatbot
-aha_info_prompt = """
-American High School Academy (AHSA) is a fully accredited, private high school located in Miami, Florida. The school is committed to providing high-quality education to prepare students both academically and personally for college and beyond. It offers a wide range of courses and learning pathways to cater to various student needs, including virtual and blended learning, credit recovery, dropout prevention, alternative education, English language learning, and summer school programs.
-
-The school also offers NCAA approved courses, meeting the standards of quality and effectiveness set by the National Collegiate Athletic Association, Florida Standards, and the Common Core State Standards. This indicates a focus on comprehensive and rigorous academic programs.
-
-The student population of American High School Academy includes about 600 students in grades 6-12, with a student-teacher ratio of 26 to 1. Approximately 70% of graduates from this school go on to attend a 4-year college, highlighting the school's effectiveness in preparing students for higher education.
-"""
-
-# Call this function when the server starts
-    # initialize_system()
-
-@login_required
-def question_answering(request):
-    chat_history = request.session.get('chat_history', [])
-
-    if request.method == 'POST':
-        question = request.POST.get('question')
-        print(question)
-        if "ahsa" in question.lower() or "american high school academy" in question.lower():
-            answer = aha_info_prompt
-        else:
-            generated_text = global_qa(question)
-            answer = generated_text['result']
-
-            if answer:
-                print('----------------------------------')
-                print(answer)
-                print('----------------------------------')
-                chat_history.append({'question': question, 'answer': answer})
-                request.session['chat_history'] = chat_history
-                request.session.save()
-            else:
-                answer = "No matching found."
-
-        return JsonResponse({'answer': answer, 'chat_history': chat_history})
-    else:
-        return render(request, 'ai_tutor/chatbot.html', {'answer': ''})
-
-
-@login_required
-def profile(request):
-    user_pdfs = Pdf_Model.objects.filter(user=request.user)
-    return render(request, 'ai_tutor/profile.html', {'user_pdfs': user_pdfs})
 
 def Academy_stats(request):
     # Count all users
@@ -235,6 +118,203 @@ def edit_banned_word(request, banned_word_id):
     return render(request, 'ai_tutor/banned_words.html', {'banned_words': banned_words})
 
 
+def extract_text_from_pdf(pdf_path):
+    doc = fitz.open(pdf_path)
+    text = ''
+
+    for page_num in range(doc.page_count):
+        page = doc[page_num]
+        text += page.get_text()
+
+    doc.close()
+    return text
+
+def clean_text(text):
+    cleaned_text = re.sub(r'\s+', ' ', text).strip()
+    cleaned_text = re.sub(r'\s*([.,;!?])\s*', r'\1 ', cleaned_text)
+    cleaned_text = re.sub(r' +', ' ', cleaned_text)
+    cleaned_text = re.sub(r'CHAP TER \d+', r'\n\g<0>', cleaned_text)
+
+    return cleaned_text
+
+def split_text(text, chunk_size=1000, chunk_overlap=20):
+    chunks = [text[i:i+chunk_size] for i in range(0, len(text), chunk_size - chunk_overlap)]
+    return chunks
+
+def process_pdf(pdf_model):
+    pdf_text = extract_text_from_pdf(pdf_model.file.path)
+    cleaned_text = clean_text(pdf_text)
+    chunks = split_text(cleaned_text)
+
+    # Create Document objects from chunks
+    docs = [Document(page_content=chunk) for chunk in chunks]
+
+    return docs
+
+global_documents_pdf = None
+global_qa = None
+# Define the role and capabilities of the AI Teacher
+ai_teacher_description = """
+As the 'American High School Academy AI Teacher', your role is comprehensive, 
+covering a wide range of responsibilities tailored to middle and high school students. 
+You are an expert in various subjects, particularly math, where you act as a dedicated 
+tutor for grades 6-12. Your proficiency in teaching math includes explaining concepts, 
+solving problems, and preparing students for exams, ensuring alignment with Florida 
+state and NCAA standards. In addition to your math expertise, you guide students in 
+writing assignments, including plagiarism detection, and assist in planning for 
+college and university. You help students understand application processes, entrance 
+exams, and financial aid options. Your teaching approach remains detailed, clear, 
+friendly, and engaging, emphasizing intellectual curiosity, academic integrity, 
+and self-reliance in learning, now with a special focus on math education for grades 6-12.
+"""
+
+
+def initialize_system():
+    global global_documents_pdf, global_qa
+
+    pdfs = Pdf_Model.objects.all()
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        global_documents_pdf = [doc for sublist in executor.map(process_pdf, pdfs) for doc in sublist]
+
+    prompt_template =   "Use the following pieces of context to answer the question at the end. If you do not know the answer, please think rationally and answer from your own knowledge base. {context} Question: {question} "
+    PROMPT = PromptTemplate(
+        template=prompt_template, input_variables=["context", "question"]
+    )
+    chain_type_kwargs = {"prompt": PROMPT}
+    # Initialize the QA model here
+    llm = ChatOpenAI(
+        openai_api_key=OPENAI_API_KEY,
+        model_name='gpt-4',
+        temperature=0.0 ,
+    )   
+    embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
+    db = Chroma.from_documents(global_documents_pdf, embeddings)
+    retriever = db.as_retriever()
+    # global_qa = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=retriever, chain_type_kwargs={"prompt": ai_teacher_description}, return_source_documents=True)
+    global_qa = RetrievalQA.from_chain_type(llm=llm,chain_type="stuff", retriever=retriever, chain_type_kwargs=chain_type_kwargs, return_source_documents=True)
+
+# Prompt for the chatbot
+aha_info_prompt = """
+American High School Academy (AHSA) is a fully accredited, private high school located in Miami, Florida. The school is committed to providing high-quality education to prepare students both academically and personally for college and beyond. It offers a wide range of courses and learning pathways to cater to various student needs, including virtual and blended learning, credit recovery, dropout prevention, alternative education, English language learning, and summer school programs.
+
+The school also offers NCAA approved courses, meeting the standards of quality and effectiveness set by the National Collegiate Athletic Association, Florida Standards, and the Common Core State Standards. This indicates a focus on comprehensive and rigorous academic programs.
+
+The student population of American High School Academy includes about 600 students in grades 6-12, with a student-teacher ratio of 26 to 1. Approximately 70% of graduates from this school go on to attend a 4-year college, highlighting the school's effectiveness in preparing students for higher education.
+"""
+
+# Call this function when the server starts
+initialize_system()
+
+@login_required
+def question_answering(request):
+    chat_history = request.session.get('chat_history', [])
+
+    if request.method == 'POST':
+        question = request.POST.get('question')
+        
+        print(question)
+        if "ahsa" in question.lower() or "american high school academy" in question.lower():
+            answer = aha_info_prompt
+        else:
+            generated_text = global_qa(question)
+            answer = generated_text['result']
+
+            if answer:
+                print('----------------------------------')
+                print(answer)
+                print('----------------------------------')
+                chat_history.append({'question': question, 'answer': answer})
+                request.session['chat_history'] = chat_history
+                request.session.save()
+                is_positive = request.POST.get('is_positive', None)
+                print(is_positive)
+                save_feedback(request.user.id, question, answer, is_positive)
+            else:
+                answer = "No matching found."
+
+        return JsonResponse({'answer': answer, 'chat_history': chat_history})
+    else:
+        return render(request, 'ai_tutor/chatbot.html', {'answer': ''})
+
+
+
+def ask_openai(message):
+    response = openai.ChatCompletion.create(
+        model = "gpt-4",
+        messages=[
+            {"role": "system", "content": "As the 'American High School Academy AI Teacher', your role is comprehensive, covering a wide range of responsibilities tailored to middle and high school students. You are an expert in various subjects, particularly math, where you act as a dedicated tutor for grades 6-12. Your proficiency in teaching math includes explaining concepts, solving problems, and preparing students for exams, ensuring alignment with Florida state and NCAA standards. In addition to your math expertise, you guide students in writing assignments, including plagiarism detection, and assist in planning for college and university. You help students understand application processes, entrance exams, and financial aid options. Your teaching approach remains detailed, clear, friendly, and engaging, emphasizing intellectual curiosity, academic integrity, and self-reliance in learning, now with a special focus on math education for grades 6-12."},
+            {"role": "user", "content": message},
+        ]
+    )
+    
+    answer = response.choices[0].message.content.strip()
+    return answer
+
+
+def staff_chatbot(request):
+    chat_history = request.session.get('chat_history', [])
+    
+    if request.method == 'POST':
+        question = request.POST.get('question')
+
+        if "ahsa" in question.lower() or "american high school academy" in question.lower():
+            response = aha_info_prompt
+        else:
+            response = ask_openai(question)
+
+            if response:
+                chat_history.append({'question': question, 'response': response})
+                request.session['chat_history'] = chat_history
+                request.session.save()
+
+                # Save user feedback to the database
+                is_positive = request.POST.get('is_positive', None)
+                print(is_positive)
+                save_feedback(request.user.id, question, response, is_positive)
+
+            else:
+                response = "No matching found."
+
+        return JsonResponse({'response': response, 'chat_history': chat_history})   
+
+    return render(request, 'ai_tutor/staff_chatbot.html')
+
+def save_feedback(user_id, question, response, is_positive):
+    # Check if is_positive is not None before converting to boolean
+    is_positive_bool = is_positive.lower() == 'true' if is_positive is not None else None
+    feedback = Feedback(user_id=user_id, question=question, response=response, is_positive=is_positive_bool)
+    feedback.save()
+
+@login_required
+def profile(request):
+    user_pdfs = Pdf_Model.objects.filter(user=request.user)
+    return render(request, 'ai_tutor/profile.html', {'user_pdfs': user_pdfs})
+
+def register_users_from_csv(csv_file_path):
+    with open(csv_file_path, mode='r') as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            first_name = row['First_Name']
+            last_name = row['Last_Name']
+            email = row['Email']
+            password = first_name  # or any other logic for password
+
+            # Check if user already exists
+            if not User.objects.filter(username=email).exists():
+                # Create user if not exists
+                user = User.objects.create_user(
+                    username=email, email=email, password=password,
+                    first_name=first_name, last_name=last_name
+                )
+                user.is_staff = False
+                user.save()
+                print(f'Account created for {email}')
+            else:
+                print(f'User with email {email} already exists.')
+
+# Call the function with the path to your CSV file
+# register_users_from_csv('D:\\Office Work\\ai_tutor\\american_ai_tutor\\ai_tutor\\users.csv')
+
 class User_Registration_view(View):
     def get(self, request):
         form = UserRegisterForm()
@@ -255,4 +335,47 @@ class User_Registration_view(View):
             return redirect('login')
         else:
             return render(request, 'ai_tutor/register.html', {'form': form})
+        
+
+
+# # Assuming you have a specific user to associate with the banned words
+# user = User.objects.get(username='admin@gmail.com')  # Replace 'your_username' with the actual username
+
+# url = 'https://gist.githubusercontent.com/jamiew/1112488/raw/7ca9b1669e1c24b27c66174762cb04e14cf05aa7/google_twunter_lol'
+
+# response = requests.get(url)
+
+# # Check if the request was successful (status code 200)
+# if response.status_code == 200:
+#     data = response.text
+
+#     # Extracting JavaScript object using regex
+#     match = re.search(r'easterEgg\.BadWorder\.list\s*=\s*({[^;]+})', data)
+    
+#     if match:
+#         json_data = match.group(1)
+
+#         # Replace single quotes with double quotes for both keys and values
+#         json_data_fixed = re.sub(r"([a-zA-Z0-9_]+):", r'"\1":', json_data)
+        
+#         # Parse the corrected JSON data
+#         bad_words_dict = json.loads(json_data_fixed)
+
+#         # Create instances of the BannedWord model for each word
+#         for word in bad_words_dict.keys():
+#             # Check if the word already exists in the database to avoid duplicates
+#             if not bannend_word.objects.filter(word=word).exists():
+#                 # Create a new BannedWord instance and associate it with the user
+#                 banned_words = bannend_word(user=user, word=word)
+
+#                 # Save the instance to the database
+#                 banned_words.save()
+                
+#                 print(f"Banned word '{word}' added to the database for user '{user.username}'.")
+#             else:
+#                 print(f"Banned word '{word}' already exists in the database.")
+#     else:
+#         print("Couldn't find the JavaScript object in the response.")
+# else:
+#     print(f"Failed to retrieve data. Status code: {response.status_code}")
 

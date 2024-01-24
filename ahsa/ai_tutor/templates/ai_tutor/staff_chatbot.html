@@ -9,12 +9,18 @@
 
     {% include "ai_tutor/navbar.html" %}
     
-    <div class="chat-container" style="background-color: #444654; overflow-y: auto; max-height: 100vh; padding-bottom: 150px; height: 85vh;">
+    <div class="chat-container" style="background-color: #f8f4eb; overflow-y: auto; max-height: 70vh; padding-bottom: 150px; height: 85vh;">
         <div id="chat-log" style="padding-left: 100px; padding-right: 100px; padding-top: 20px;">
             <!-- Chat log content goes here -->
         </div>
-    </div>  
+    </div>
 
+    <div class="predefined-questions text-center mb-5" style="padding-left: 100px; padding-right: 100px; padding-top: 20px; padding-bottom: 52px; background-color: #f8f4eb;">
+        <button class="predefined-question-btn" data-question="What is science and technology?">What is science and technology?</button>
+        <button class="predefined-question-btn" data-question="What is data?">What is data?</button> 
+        <button class="predefined-question-btn" data-question="What is openai?">What is openai?</button>
+        <button class="predefined-question-btn" data-question="Provide information about American High School Academy">Provide information about American High School Academy</button>
+    </div>
     
     <div class="typing-container">
         <div class="typing-content">
@@ -42,6 +48,28 @@
             animation: fadeInOut 1s infinite;
         }
 
+        /* Style for predefined question buttons */
+        .predefined-questions {
+            text-align: left;
+            margin-bottom: 10px;
+        }
+
+        .predefined-question-btn {
+            background-color: #52231b;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            outline: none;
+        }
+
+        .predefined-question-btn:hover {
+            background-color: #52231b;
+        }
 
         /* Add styles for user and bot message bubbles */
         .user-message {
@@ -50,7 +78,7 @@
         }
 
         .user-bubble {
-            /* background-color: #52231b;    */
+            background-color: #52231b;
             color: white;
             border-radius: 10px;
             padding: 10px;
@@ -65,7 +93,7 @@
         }
 
         .bot-bubble {
-            /* background-color: #0066FF; */
+            background-color: #0066FF;
             color: white;
             border-radius: 10px;
             padding: 10px;
@@ -140,11 +168,11 @@
                 userInput.val(''); // Clear the input field
                 showThinkingIndicator(); // Show thinking indicator
                 $.ajax({
-                    url: '/answer/',
+                    url: '/staffs/',
                     type: 'POST',
                     data: { question: userMessage, csrfmiddlewaretoken: '{{ csrf_token }}' },
                     success: function (data) {
-                        const botMessage = data.answer;
+                        const botMessage = data.response;
                         appendMessage(botMessage, 'Bot', '🤖');
                     },
                     error: function () {
@@ -156,6 +184,29 @@
                     }
                 });
             }
+
+            // Handling click events for predefined questions
+            $('.predefined-question-btn').click(function() {
+                const question = $(this).data('question');
+                appendMessage(question, 'User', '👨🏻‍🦰');  // Append user's question to the chat log
+                showThinkingIndicator();  // Show thinking indicator
+                $.ajax({
+                    url: '/staffs/',
+                    type: 'POST',
+                    data: { question: question, csrfmiddlewaretoken: '{{ csrf_token }}' },
+                    success: function (data) {
+                        const botMessage = data.response;
+                        appendMessage(botMessage, 'Bot', '🤖');  // Append bot's response to the chat log
+                    },
+                    error: function () {
+                        const errorMessage = '<div class="bot-message" style="color: red; padding-bottom: 20px; font-size: 20px;">Error processing the request.</div>';
+                        chatLog.append(errorMessage);
+                    },
+                    complete: function () {
+                        $('.thinking-message').remove();  // Remove thinking indicator
+                    }
+                });
+            });
 
             userInput.keypress(function (event) {
                 if (event.which === 13) { 
@@ -194,7 +245,7 @@
                 const is_positive = isPositive ? 'true' : 'false';
 
                 $.ajax({
-                    url: '/answer/',
+                    url: '/staffs/',
                     type: 'POST',
                     data: {
                         is_positive: is_positive,
