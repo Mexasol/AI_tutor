@@ -37,3 +37,17 @@ class Feedback(models.Model):
     class Meta:
         ordering = ['-created_at']
 
+
+class prompts(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    prompt = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.prompt[:50]}"
+
+class Custom_Prompts(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    custom_prompt = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.custom_prompt[:50]}"
