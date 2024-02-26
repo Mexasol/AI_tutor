@@ -1,0 +1,134 @@
+{% extends "ai_tutor/base.html" %}
+{% load static %} 
+
+{% block title %} Prompts Engineering {% endblock %} 
+
+{% block content %}
+<style>
+  label {
+    font-size: 18px;
+  }
+
+  /* .form-container {
+    border: 2px solid black;
+    border-radius: 10px;
+    padding: 5rem;
+  } */
+
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .forgot-password {
+    font-size: 18px;
+  }
+</style>
+
+<div class="container-fluid p-0">
+  {% include 'ai_tutor/navbar.html' %}
+</div>
+
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-sm-12 col-md-10 col-lg-12 form-container">
+     
+      <h1 class="text-center">Prompts Engineering</h1>
+
+
+      <!-- <form action="" method="post" novalidate style="display: flex; justify-content: baseline; align-items: baseline;">
+        {% csrf_token %}
+        <textarea id="Prompts" name="prompts" class="form-control" placeholder="Enter Prompts"></textarea>
+        <button type="submit" class="btn btn-dark mt-4">➛</button>
+        </form>
+      {% if messages %}  
+ 
+        {% for message in messages %}
+        <div class="alert alert-success mt-5" role="alert">{{ message }}</div>
+        {% endfor %}
+    {% endif %} -->
+      
+
+    {% if all_prompts %}
+  <div class="mt-4">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Prompts Engineering</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for prompts in all_prompts %}
+          <tr>
+            <td>
+              <span id="word_{{ prompts.id }}">{{ prompts.custom_prompt }}</span>
+              
+            </td>
+            <td>
+              <!-- <a href="{% url 'delete_prompt' prompts.id %}" class="btn btn-danger btn-sm">🗑️</a>  -->
+              <button type="button" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editModal_{{ prompts.id }}">🖊️</button>
+            </td>
+          </tr>
+
+          <!-- Edit Modal -->
+            <div class="modal fade" id="editModal_{{ prompts.id }}" tabindex="-1" role="dialog" aria-labelledby="editModalLabel_{{ prompts.id }}" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="editModalLabel_{{ prompts.id }}">Edit Prompt</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <form method="post" action="{% url 'edit_custom_prompts' prompts.id %}" novalidate>
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    <label for="new_word_{{ prompts.id }}">New Prompt:</label>
+                                    <textarea id="new_word_{{ prompts.id }}" name="new_word" class="form-control" rows="3">{{ prompts.custom_prompt }}</textarea>
+                                </div>
+                                <button type="submit" class="btn btn-warning btn-lg btn-block mt-4">Update Prompt</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endif %}
+
+  
+
+
+
+    </div>
+  </div>
+</div>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const editButtons = document.querySelectorAll('.edit-btn');
+
+    editButtons.forEach(button => {
+      button.addEventListener('click', function () {
+        const row = button.closest('tr');
+        const viewMode = row.querySelector('.view-mode');
+        const editMode = row.querySelector('.edit-mode');
+
+        viewMode.style.display = 'none';
+        editMode.style.display = 'block';
+
+        // Optionally, you can focus on the input field for a better user experience
+        const inputField = editMode.querySelector('input[name="new_word"]');
+        inputField.focus();
+      });
+    });
+  });
+</script>
+{% endblock content %}
+<<<<<<< HEAD:american_ai_tutor/ai_tutor/templates/ai_tutor/custom_prompt.html
+
+=======
+>>>>>>> a48600a702112eeaeac2b6ff98770c5ea6e3fec8:ahsa/ai_tutor/templates/ai_tutor/custom_prompt.html
