@@ -1,0 +1,392 @@
+{% extends "ai_tutor/base.html" %}
+{% load static %}
+
+{% block title %}
+    Chatbot
+{% endblock title %}
+
+{% block content %}
+
+    {% include "ai_tutor/navbar.html" %}
+
+    <style>
+        body{
+            background-color: #343541;
+        }
+        .typing-textarea .input-with-button {
+            width: 880px;
+            display: flex;
+            align-items: center;
+            
+        }
+        .typing-textarea{
+            border-top: none !important;
+        }
+
+        .typing-textarea input {
+            flex: 1;
+            resize: none;
+            border: none;
+            padding: 10px 20px;
+            color: var(--text-color);
+            font-size: 1rem;
+            border-radius: 4px;
+            overflow-y: auto;
+            background: none;
+            outline: 1px solid #ffffffb2;
+            border-radius: 10px;
+        }
+
+        .typing-textarea button {
+            /* height: 30px; Adjust height as needed */
+            padding: 13px 10px;
+            font-size: 1.3rem; /* Adjust font size as needed */
+            border: none;
+            border-radius: 8px;
+            background: var(--icon-color);
+            color: #fff;
+            opacity: 0.8;
+            cursor: pointer;
+            margin-left: 5px; /* Adjust margin as needed */
+        }
+
+        .typing-textarea select {
+        flex: 1;
+        padding: 10px 20px;
+        color: var(--text-color);
+        font-size: 1rem;
+        border: none;
+        border-radius: 4px;
+        overflow-y: auto;
+        background: none;
+        outline: 1px solid #ffffffb2;
+        border-radius: 10px;
+        margin-left: 5px;
+    }
+        /* Apply styles to hide the scrollbar in WebKit browsers */
+        .chat-container::-webkit-scrollbar {
+            width:0; /* Set the width to a very small value */
+        }
+
+        .chat-container::-webkit-scrollbar-thumb {
+            background-color: transparent; /* Set the thumb color to transparent */
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .predefined-question-btn {
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            /* Add any additional styling you want for the buttons */
+            margin: 5px;
+            font-size: 13px;
+        }
+
+    </style>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 col-md-10 col-12">
+                <div class="chat-container" style="overflow-y: auto; max-height: 70vh; padding-bottom: 150px; height: 85vh; ">
+                    <div id="chat-log" style="padding-left: 20px; padding-right: 20px; padding-top: 20px;">
+                        <!-- Chat log content goes here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
+    <div id="predefined-questions-container" class="predefined-questions text-center mb-5 col-lg-12">
+        <div class="grid-container">
+            {% for prompts in all_prompts %}
+            <button class="predefined-question-btn" data-question="{{prompts.prompt}}">{{prompts.prompt}}</button>
+            {% endfor %}
+        </div>
+    </div>
+    
+    
+    <div class="typing-container">
+        <div class="typing-content">
+            <div class="typing-textarea">
+                <div class="input-with-button">
+                    <input type="text" id="chat-input" spellcheck="false" placeholder="Message American High School Academy AI Teacher…" required />
+                    <button id="send-btn" class="material-symbols-rounded">send</button> 
+                </div>
+            </div>
+            <div class="typing-controls">
+            </div>
+        </div>
+    </div>
+    
+    
+      
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        @keyframes fadeInOut {
+            0%, 100% {
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+
+        .thinking-message {
+            animation: fadeInOut 1s infinite;
+        }
+
+        /* Style for predefined question buttons */
+        .predefined-questions {
+            text-align: left;
+            margin-bottom: 10px;
+        }
+
+        .predefined-question-btn {
+            background-color: transparent;
+            color: white;
+            padding: 10px 15px;
+            border: 1px solid white;
+            border-radius: 5px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            outline: none;
+        }
+
+        .predefined-question-btn:hover {
+            background-color: #41434e;
+        }
+
+        /* Add styles for user and bot message bubbles */
+        .user-message {
+            text-align: right;
+            margin-bottom: 10px;
+        }
+
+        .user-bubble {
+            background-color: #41434e;
+            color: white;
+            border-radius: 10px;
+            padding: 10px;
+            margin: 5px 0;
+            display: inline-block;
+            max-width: 70%;
+        }
+
+        .bot-message {
+            text-align: left;
+            margin-bottom: 10px;
+        }
+
+        .bot-bubble {
+            background-color: #444654;
+            color: white;
+            border-radius: 10px;
+            padding: 10px;
+            margin: 5px 0;
+            display: inline-block;
+            max-width: 70%;
+        }
+
+        /* Emoji styles */
+        .emoji {
+            /* margin-right: 5px; */
+            font-size: 20px;
+            vertical-align: middle;
+        }
+
+        .feedback-buttons {
+            /* text-align: center; */
+            margin-top: 10px;
+        }
+
+        .feedback-buttons button {
+            background-color:transparent;
+            font-size: 14px;
+            color: white;
+            padding: 10px 10px;
+            border: none;
+            border-radius: 5px;
+            margin-right: 2px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            outline: none;
+        }
+
+        .feedback-buttons button:hover {
+            background-color: transparent;
+            /* add animated hover effect */
+            animation: fadeInOut 1s infinite;
+        }
+    </style>
+    <script>
+        $(document).ready(function () {
+    const chatLog = $('#chat-log');
+    const userInput = $('#chat-input');
+    const sendButton = $('#send-btn');
+    const predefinedQuestionsContainer = $('#predefined-questions-container');
+
+    function appendMessage(message, sender, emoji) {
+        const senderClass = sender === 'User' ? 'user-message' : 'bot-message';
+        const bubbleClass = sender === 'User' ? 'user-bubble' : 'bot-bubble';
+        const emojiHTML = emoji ? `<span class="emoji">${emoji}</span>` : '';
+        const feedbackButtons = sender === 'Bot' ? '<div class="feedback-buttons"><span color="#ffffff9a";>Feedback:</span><button class="material-symbols-rounded thumbs-up-btn">👍🏻</button><button class="material-symbols-rounded thumbs-down-btn">👎</button></div>' : '';
+        const messageDiv = `
+            <div class="${senderClass}">
+                <div class="${bubbleClass}">
+                    ${emojiHTML}${message}
+                    ${feedbackButtons}
+                </div>
+            </div>
+        `;
+        chatLog.append(messageDiv);
+        chatLog.scrollTop(chatLog[0].scrollHeight);
+    }
+
+    function showThinkingIndicator() {
+        const thinkingMessage = '<div class="bot-message thinking-message"> <span class="" style="font-size: 20px; color: white">Thinking...</span></div>';
+        chatLog.append(thinkingMessage);
+        chatLog.scrollTop(chatLog[0].scrollHeight);
+    }
+
+    function handleUserInput() {
+        const userMessage = userInput.val();
+        if (userMessage.trim() !== '') {
+            predefinedQuestionsContainer.hide();
+        } else {
+            predefinedQuestionsContainer.show();
+        }
+
+        appendMessage(userMessage, 'User', '👨🏻‍🦰');
+        showThinkingIndicator();
+        userInput.val(''); // Clear the input field
+
+        $.ajax({
+            url: '/staffs/',
+            type: 'POST',
+            data: { question: userMessage, csrfmiddlewaretoken: '{{ csrf_token }}' },
+            success: function (data) {
+                const botMessage = data.response;
+
+                // Check if the data.response contains a link
+                const linkRegex = /(https?:\/\/[^\s]+)/;
+                const match = botMessage.match(linkRegex);
+
+                if (match) {
+                    // If a link is present, create an image tag with the extracted link and set dimensions to 500x500
+                    const imageLink = match[0];
+                    const imageTag = `<img src="${imageLink}" alt="Image" style="width: 470px; height: 400px;">`;
+                    appendMessage(imageTag, 'Bot', '\uD83E\uDD16');  // Unicode equivalent for 🤖
+                } else {
+                    // If no link is present, append the simple text
+                    appendMessage(botMessage, 'Bot', '\uD83E\uDD16');  // Unicode equivalent for 🤖
+                }
+            },
+            error: function () {
+                const errorMessage = '<div class="bot-message" style="color: red; padding-bottom: 20px; font-size: 20px;">We cannot answer any other questions..</div>';
+                chatLog.append(errorMessage);
+            },
+            complete: function () {
+                $('.thinking-message').remove();
+            }
+        });
+    }
+
+    $('.predefined-question-btn').click(function () {
+        const question = $(this).data('question');
+        appendMessage(question, 'User', '👨🏻‍🦰');
+        showThinkingIndicator();
+        userInput.val(''); // Clear the input field
+        predefinedQuestionsContainer.hide();
+
+        $.ajax({
+            url: '/staffs/',
+            type: 'POST',
+            data: { question: question, csrfmiddlewaretoken: '{{ csrf_token }}' },
+            success: function (data) {
+                const botMessage = data.response;
+
+                // Check if the data.response contains a link
+                const linkRegex = /(https?:\/\/[^\s]+)/;
+                const match = botMessage.match(linkRegex);
+
+                if (match) {
+                    // If a link is present, create an image tag with the extracted link and set dimensions to 500x500
+                    const imageLink = match[0];
+                    const imageTag = `<img src="${imageLink}" alt="Image" style="width: 500px; height: 500px;">`;
+                    appendMessage(imageTag, 'Bot', '\uD83E\uDD16');  // Unicode equivalent for 🤖
+                } else {
+                    // If no link is present, append the simple text
+                    appendMessage(botMessage, 'Bot', '\uD83E\uDD16');  // Unicode equivalent for 🤖
+                }
+            },
+            error: function () {
+                const errorMessage = '<div class="bot-message" style="color: red; padding-bottom: 20px; font-size: 20px;">We cannot answer any other questions.</div>';
+                chatLog.append(errorMessage);
+            },
+            complete: function () {
+                $('.thinking-message').remove();
+            }
+        });
+    });
+
+    userInput.keypress(function (event) {
+        if (event.which === 13) {
+            handleUserInput();
+        }
+    });
+
+    sendButton.click(handleUserInput);
+
+    chatLog.on('click', '.thumbs-up-btn', function () {
+        toggleFeedbackButtons($(this));
+        sendFeedback(true);
+    });
+
+    chatLog.on('click', '.thumbs-down-btn', function () {
+        toggleFeedbackButtons($(this));
+        sendFeedback(false);
+    });
+
+    function toggleFeedbackButtons(clickedButton) {
+        const parentMessage = clickedButton.closest('.bot-message');
+        const feedbackButtons = parentMessage.find('.feedback-buttons button');
+        feedbackButtons.hide();
+        clickedButton.show();
+        parentMessage.data('is_positive', clickedButton.hasClass('thumbs-up-btn'));
+    }
+
+    function sendFeedback(isPositive) {
+        const is_positive = isPositive ? 'true' : 'false';
+
+        $.ajax({
+            url: '/staffs/',
+            type: 'POST',
+            data: {
+                is_positive: is_positive,
+                question: $('#chat-log .user-message:last .user-bubble').text(),
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            },
+            success: function (data) {
+                console.log('Feedback saved successfully');
+            },
+            error: function () {
+                console.error('Error saving feedback');
+            }
+        });
+    }
+});
+
+
+    </script>
+    
+
+    
+
+{% endblock content %}

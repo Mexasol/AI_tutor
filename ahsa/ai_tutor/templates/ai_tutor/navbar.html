@@ -1,0 +1,50 @@
+<!-- navbar -->
+{% load static %}
+<!-- Updated Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark pl-5 pr-5" style="background-color: #5B52FA; opacity: 0.9;">
+    <a class="navbar-brand ml-5" href="{% url 'index' %}"><img src="{% static 'images/logo-white.png' %}" alt="logo" width="200"></a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse mr-5" id="navbarNav">
+        <ul class="navbar-nav ml-auto" style="font-size: 14px; font-family: 'Roboto', sans-serif !important;">
+            {% if user.is_authenticated %}
+                <!-- if user is superuser -->
+                {% if user.is_staff %}
+                    <!-- Show Home Page and Chatbot Page for Staff -->
+                    <li class="nav-item active" style="font-size: 14px; font-family: 'Roboto', sans-serif !important;">
+                        <a class="nav-link" href="{% url 'index' %}">Home <span class="sr-only">(current)</span></a>
+                    </li>
+                    <li class="nav-item active" style="font-size: 14px; font-family: 'Roboto', sans-serif !important;">
+                        <a class="nav-link" href="{% url 'staffs' %}">Staff Chatbot <span class="sr-only">(current)</span></a>
+                    </li>
+                    <li class="nav-item active" style="font-size: 14px; font-family: 'Roboto', sans-serif !important;">
+                        <a class="nav-link" href="{% url 'upload_documents' %}">Upload Documents <span class="sr-only">(current)</span></a>
+                    </li>
+                    <li class="nav-item active" style="font-size: 14px; font-family: 'Roboto', sans-serif !important;">
+                        <a class="nav-link" href="{% url 'answer' %}">Student Chatbot <span class="sr-only">(current)</span></a>
+                    </li>
+                {% else %}
+                    <!-- Redirect Non-Staff to Chatbot Page -->
+                    <li class="nav-item active" style="font-size: 14px; font-family: 'Roboto', sans-serif !important;">
+                        <a class="nav-link" href="{% url 'answer' %}">Chatbot <span class="sr-only">(current)</span></a>
+                    </li>
+                {% endif %}
+                <li class="nav-item dropdown active" style="font-size: 14px; font-family: 'Roboto', sans-serif !important;">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        {{ user.first_name }}
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <a class="dropdown-item" href="{% url 'profile' %}">Profile</a>
+                        <a class="dropdown-item" href="{% url 'logout' %}">Logout</a>
+                    </div>
+                </li>                
+            {% else %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'login' %}">Login</a>
+                </li>
+            {% endif %}
+        </ul>
+    </div>
+</nav>
+

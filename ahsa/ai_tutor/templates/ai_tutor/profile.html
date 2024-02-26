@@ -1,0 +1,82 @@
+{% extends "ai_tutor/base.html" %} 
+
+{% block title %} Profile  | American High School Academy {% endblock title %}
+{% block content %}
+  {% include "ai_tutor/navbar.html" %}
+  <h2 class='text-center mt-5'>Welcome {{request.user}}</h2>
+  <div class="container-fluid">
+    <div class="row mt-5">
+      <div class="col-md-6 offset-3">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="text-center">Profile</h3>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6">
+                <h5>Full Name</h5>
+              </div>
+              <div class="col-md-6">
+                <h5>{{request.user.first_name}} {{request.user.last_name}}</h5>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6">
+                <h5>Email</h5>
+              </div>
+              <div class="col-md-6">
+                <h5>{{request.user}}</h5>
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6 offset-lg-4 mt-2">
+                <a href="{% url 'password-change' %}" class="btn btn-primary">Change Password</a>
+              </div>
+            </div>
+                
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- if user is staff -->
+    {% if request.user.is_staff %}
+    <div class="row mt-5">
+      <div class="col-md-6 offset-3">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="text-center">Uploaded PDF</h3>
+          </div>
+          <div class="card-body">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>File Name</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% if user_pdfs  %}
+                {% for pdf in user_pdfs %}
+                <tr>
+                  <td>{{ pdf.file.name }}</td>
+                  <td>
+                    <a href="{% url 'delete_pdf' pdf.id %}" class="btn btn-danger">Delete</a>
+                  </td>
+                </tr>
+              {% endfor %}
+              {% else %}
+              <tr>
+                <td colspan="2">No PDFs uploaded</td>
+              </tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+{% endblock content %}
+  

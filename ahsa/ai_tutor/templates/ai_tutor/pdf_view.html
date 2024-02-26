@@ -1,0 +1,28 @@
+
+{% extends "base.html" %} 
+
+{% block title %} Profile {% endblock title %}
+{% block content %}
+{% include "ai_tutor/navbar.html" %}
+<h2 class='text-center mt-5'>Welcome </h2>
+<div class="container-fluid ">
+<div class="row mt-5">
+    <div class="col-md-6 offset-3">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="text-center">
+                    {% for pdf in pdfs %}
+                        <a href="{{ pdf.url }}" target="_blank">{{ pdf   }}</a><br>
+                    {% endfor %}
+                </h3>
+            </div>
+           
+        </div>
+    </div>
+
+
+
+</div>
+
+
+    {% endblock content %}
