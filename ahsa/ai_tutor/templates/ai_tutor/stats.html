@@ -13,25 +13,24 @@
 
 <div class="container mt-5">
     <div class="row">
-        <div class="col-2">
+        <div class="col-3">
             <div class="panel panel-default">
                 <div class="panel-body">
                     {% if  user.is_superuser %}
                     <div class="alert alert-success alert-dismissible" style="color:#000;">
-                        
                         User Count: {{ user_count }}
                     </div>
                     {% endif %}
                 </div>
             </div>
         </div>
-        <div class="col-2">
+        <div class="col-3">
             <div class="panel panel-default">
                 <div class="panel-body">
                     {% if  user.is_superuser %}
                     <div class="alert alert-success alert-dismissible" style="color:#000;">
                         
-                        User Count: {{ staff_count }}
+                        User Count Staff: {{ staff_count }}
                     </div>
                     {% endif %}
                 </div>
@@ -55,13 +54,115 @@
             <canvas id="barChart" width="400" height="200"></canvas>
         </div>
         <div class="col-4">
-            <canvas id="pieChart" width="400" height="200"></canvas>
+            <canvas id="pieChart" width="200" height="200"></canvas>
         </div>
         <div class="col-4">
-            <canvas id="lineChart" width="400" height="200"></canvas>
+            <canvas id="lineChart" width="250" height="200"></canvas>
         </div>
     </div>
 </div>
+
+<!-- 'user_names': user_names,
+        'user_emails': user_emails -->
+
+<div class="container mt-5 mb-4">
+    <div class="row">
+        <div class="col-6">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                {% if user.is_superuser %}
+                    <div class="alert alert-success alert-dismissible" style="color:#000;">
+                        <h4>Staff</h4>
+                    </div>
+                    <div class="mt-4" style="overflow-y: auto; max-height: 400px;">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Name </th>
+                                    <th>Emails</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in staff_users %}
+                                    <tr>
+                                        <td><span>{{ user.first_name }} {{ user.last_name }}</span></td>
+                                        <td><span>{{ user.email }}</span></td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                {% if user.is_superuser %}
+                    <div class="alert alert-success alert-dismissible" style="color:#000;">
+                        <h4>Students</h4>
+                    </div>
+                    <div class="mt-4" style="overflow-y: auto; max-height: 400px;">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Name </th>
+                                    <th>Emails</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in non_staff_users %}
+                                    <tr>
+                                        <td><span>{{ user.first_name }} {{ user.last_name }}</span></td>
+                                        <td><span>{{ user.email }}</span></td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="container mt-5 mb-4">
+    <div class="row">
+        <div class="col-12 ">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                {% if user.is_superuser %}
+                    <div class="alert alert-success alert-dismissible" style="color:#000;">
+                        <h4 class="text-center">Feedback</h4>
+                    </div>
+                    <div class="mt-4" style="overflow-y: auto; max-height: 400px;">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Question </th>
+                                    <th>Response</th>
+                                    <th>Is Positive or Negative</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for feedbacks in feedback %}
+                                    <tr>
+                                        <td><span>{{ feedbacks.question }}</span></td>
+                                        <td><span>{{ feedbacks.response }}</span></td>
+                                        <td><span>{{ feedbacks.is_positive }}</span></td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+        
 <script>
     var statsData = {{ data|safe }};
 

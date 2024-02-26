@@ -289,7 +289,7 @@
                 }
             },
             error: function () {
-                const errorMessage = '<div class="bot-message" style="color: red; padding-bottom: 20px; font-size: 20px;">We cannot answer any other questions..</div>';
+                const errorMessage = '<div class="bot-message" style="color: red; padding-bottom: 20px; font-size: 20px;">You requested to generate inappropriate images or text. Ask other questions.</div>';
                 chatLog.append(errorMessage);
             },
             complete: function () {
@@ -327,7 +327,7 @@
                 }
             },
             error: function () {
-                const errorMessage = '<div class="bot-message" style="color: red; padding-bottom: 20px; font-size: 20px;">We cannot answer any other questions.</div>';
+                const errorMessage = '<div class="bot-message" style="color: red; padding-bottom: 20px; font-size: 20px;">You requested to generate inappropriate images or text. Ask other questions..</div>';
                 chatLog.append(errorMessage);
             },
             complete: function () {

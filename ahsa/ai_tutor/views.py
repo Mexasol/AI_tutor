@@ -31,7 +31,7 @@ from langchain.prompts import PromptTemplate
 # from langchain.text_splitter import RecursiveCharacterTextSplitter
 # from langchain.document_loaders import PyPDFLoader,PyPDFDirectoryLoader
 
-OPENAI_API_KEY= "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"
+OPENAI_API_KEY= "--"
 
 openai.api_key = OPENAI_API_KEY
 
@@ -86,14 +86,36 @@ def Academy_stats(request):
     # Count banned words
     banned_words_count = bannend_word.objects.count()
 
+    # Get user name and email of all users
+    users = User.objects.all()
+    user_data = [(user.first_name + ' ' + user.last_name, user.email) for user in users]
+
+    # Filter staff and non-staff users
+    staff_users = User.objects.filter(is_staff=True)
+    non_staff_users = User.objects.filter(is_staff=False)
+
+    # get all feedbacks
+
+    feedback = Feedback.objects.all()
+    
+
     data = {
         'user_count': user_count,
         'staff_count': staff_count,
-        # 'admin_count': admin_count,
         'banned_words_count': banned_words_count,
     }
 
-    return render(request, 'ai_tutor/stats.html', {'data': json.dumps(data), 'staff_count': staff_count, 'user_count': user_count, 'banned_words_count': banned_words_count})
+    return render(request, 'ai_tutor/stats.html', {
+        'data': json.dumps(data),
+        'staff_count': staff_count,
+        'user_count': user_count,
+        'banned_words_count': banned_words_count,
+        'staff_users': staff_users,
+        'non_staff_users': non_staff_users,
+        'user_data': user_data,
+        'feedback': feedback
+    })
+
     
 ################################# Banned Words ########################################
 @login_required  # Use this decorator to ensure the user is logged in
@@ -288,7 +310,7 @@ The student population of American High School Academy includes about 600 studen
 """
 
 # Call this function when the server starts
-initialize_system()
+# initialize_system()
 
 def image_generation(prompt):
     res = openai.Image.create( 
@@ -406,9 +428,9 @@ def register_users_from_csv(csv_file_path):
     with open(csv_file_path, mode='r') as file:
         reader = csv.DictReader(file)
         for row in reader:
-            first_name = row['First_Name']
-            last_name = row['Last_Name']
-            email = row['Email']
+            first_name = row['first_name']
+            last_name = row['last_name']
+            email = row['email']
             password = first_name  # or any other logic for password
 
             # Check if user already exists
@@ -425,7 +447,7 @@ def register_users_from_csv(csv_file_path):
                 print(f'User with email {email} already exists.')
 
 # Call the function with the path to your CSV file
-# register_users_from_csv('D:\\Office Work\\ai_tutor\\american_ai_tutor\\ai_tutor\\users.csv')
+# register_users_from_csv('D:/Office Work/ameracan_high_school/ahsa/ai_tutor/users.csv')
 
 class User_Registration_view(View):
     def get(self, request):
