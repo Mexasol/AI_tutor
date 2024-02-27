@@ -57,6 +57,16 @@
                     </div>
                 </div><!--End .col-->
             </div><!--End .row-->
+            <div class="row mt-4">
+                <!-- card -->
+                <div class="col-md-4">
+                    <div class="card" style="box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);">
+                        <div class="card-body">
+                            <a href="{% url 'change_delete_user' %}" class="card-title text-decoration-none" style="color: #000;">Password Change & User Deletion</a>
+                        </div>
+                    </div>
+                </div><!--End .col-->
+            </div><!--End .row-->
 
             {% if user.is_superuser %}
                 <div class="row mt-4">

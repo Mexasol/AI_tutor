@@ -1,0 +1,124 @@
+{% extends "ai_tutor/base.html" %}
+{% load static %} 
+
+{% block title %} User Management {% endblock %} 
+
+{% block content %}
+<style>
+  label {
+    font-size: 18px;
+  }
+
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+</style>
+
+<div class="container-fluid p-0">
+  {% include 'ai_tutor/navbar.html' %}
+</div>
+
+<div class="container mt-5">
+  <div class="mt-4">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>User ID</th>
+          <th>Email</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for user in staff_users %}
+        <tr>
+          <td>{{ user.id }}</td>
+          <td>{{ user.email }}</td>
+          <td>
+            <button type="button" class="btn btn-primary btn-sm changePasswordBtn" data-toggle="modal" data-target="#changePasswordModal_{{ user.id }}">Change Password</button>
+            <form class="deleteUserForm" style="display: inline-block;">
+              {% csrf_token %}
+              <input type="hidden" name="user_id" value="{{ user.id }}">
+              <button type="submit" class="btn btn-danger btn-sm">Delete User</button>
+            </form>
+          </td>
+        </tr>
+        <!-- Change Password Modal -->
+        <div class="modal fade" id="changePasswordModal_{{ user.id }}" tabindex="-1" role="dialog" aria-labelledby="changePasswordModalLabel_{{ user.id }}" aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="changePasswordModalLabel_{{ user.id }}">Change Password</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <form class="changePasswordForm">
+                  {% csrf_token %}
+                  <input type="hidden" name="user_id" value="{{ user.id }}">
+                  <div class="form-group">
+                    <label for="new_password_{{ user.id }}">New Password:</label>
+                    <input type="password" id="new_password_{{ user.id }}" name="new_password" class="form-control">
+                  </div>
+                  <button type="submit" class="btn btn-primary">Change Password</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  $(document).ready(function() {
+    // AJAX for changing password
+    $('.changePasswordForm').submit(function(e) {
+      e.preventDefault();
+      var form = $(this);
+      $.ajax({
+        type: 'POST',
+        url: '/change-password/',
+        data: form.serialize(),
+        success: function(response) {
+          if (response.success) {
+            alert('Password changed successfully!');
+            $('#changePasswordModal_' + form.find('[name=user_id]').val()).modal('hide'); // Close the modal after successful password change
+          } else {
+            alert('Password change failed: ' + response.error);
+          }
+        },
+        error: function(xhr, errmsg, err) {
+          alert('Password change failed: ' + err);
+        }
+      });
+    });
+
+    // AJAX for deleting user
+    $('.deleteUserForm').submit(function(e) {
+      e.preventDefault();
+      var form = $(this);
+      $.ajax({
+        type: 'POST',
+        url: '/delete-user/',
+        data: form.serialize(),
+        success: function(response) {
+          if (response.success) {
+            alert('User deleted successfully!');
+            // Optionally, you can remove the deleted user row from the table
+            form.closest('tr').remove();
+          } else {
+            alert('User deletion failed: ' + response.error);
+          }
+        },
+        error: function(xhr, errmsg, err) {
+          alert('User deletion failed: ' + err);
+        }
+      });
+    });
+  });
+</script>
+
+{% endblock content %}

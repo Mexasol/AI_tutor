@@ -12,6 +12,12 @@ urlpatterns = [
     path('profile/', views.profile, name='profile'),
     path('answer/', views.question_answering, name='answer'),
     path('stats/', views.Academy_stats, name='stats'),
+    
+    path('change_delete_user/',views.change_delete_user, name='change_delete_user'),
+    path('change-password/', views.change_password, name='change_password'),
+    path('delete-user/', views.delete_user, name='delete_user'),
+
+
     path('banned_words/', views.Banneds_words, name='banned_words'),
     path('banned_words/delete/<int:banned_word_id>/', views.delete_banned_word, name='delete_banned_word'),
     path('banned_words/edit/<int:banned_word_id>/', views.edit_banned_word, name='edit_banned_word'),

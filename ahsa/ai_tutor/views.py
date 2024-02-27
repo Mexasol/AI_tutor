@@ -18,6 +18,7 @@ from django.core.mail import send_mail
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User, Group, Permission
 from django.shortcuts import render,redirect,get_object_or_404
+from django.contrib.auth import update_session_auth_hash
 
 # langchain imports
 from langchain.chains import RetrievalQA
@@ -31,7 +32,7 @@ from langchain.prompts import PromptTemplate
 # from langchain.text_splitter import RecursiveCharacterTextSplitter
 # from langchain.document_loaders import PyPDFLoader,PyPDFDirectoryLoader
 
-OPENAI_API_KEY= "--"
+OPENAI_API_KEY= "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"
 
 openai.api_key = OPENAI_API_KEY
 
@@ -51,7 +52,6 @@ def home(request):
         documents_list = [Pdf_Model(file=document, user=user) for document in documents]
         Pdf_Model.objects.bulk_create(documents_list)
         print("Uploaded PDF names:", document_names)
-        # initialize_system()
         messages.success(request, "PDF Uploaded")
     return render(request, 'ai_tutor/index.html', {'document_names': document_names})
 
@@ -75,29 +75,42 @@ def delete_pdf(request, pdf_id):
     pdf.delete()
     return redirect('profile')
 
+def change_password(request):
+    if request.method == 'POST':
+        user_id = request.POST.get('user_id')
+        new_password = request.POST.get('new_password')
+        user = User.objects.get(pk=user_id)
+        user.set_password(new_password)
+        user.save()
+        update_session_auth_hash(request, user)  # Keep the user logged in after password change
+        return JsonResponse({'success': True})
+    else:
+        return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+def delete_user(request):
+    if request.method == 'POST':
+        user_id = request.POST.get('user_id')
+        User.objects.filter(pk=user_id).delete()
+        return JsonResponse({'success': True})
+    else:
+        return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+def change_delete_user(request):
+    staff_users = User.objects.filter(is_staff=False, is_superuser=False)
+    return render(request, 'ai_tutor/change_delete_user.html', {'staff_users': staff_users})
+
+
 
 def Academy_stats(request):
     # Count all users
     user_count = User.objects.filter(is_staff=False, is_superuser=False).count()
-
-    # Count staff (non-admin) users
     staff_count = User.objects.filter(is_staff=True).count()
-
-    # Count banned words
     banned_words_count = bannend_word.objects.count()
-
-    # Get user name and email of all users
     users = User.objects.all()
     user_data = [(user.first_name + ' ' + user.last_name, user.email) for user in users]
-
-    # Filter staff and non-staff users
     staff_users = User.objects.filter(is_staff=True)
     non_staff_users = User.objects.filter(is_staff=False)
-
-    # get all feedbacks
-
     feedback = Feedback.objects.all()
-    
 
     data = {
         'user_count': user_count,
@@ -310,7 +323,7 @@ The student population of American High School Academy includes about 600 studen
 """
 
 # Call this function when the server starts
-# initialize_system()
+initialize_system()
 
 def image_generation(prompt):
     res = openai.Image.create( 
