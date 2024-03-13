@@ -85,6 +85,8 @@
             margin: 5px;
             font-size: 13px;
         }
+       
+         
 
     </style>
     <div class="container">
@@ -100,7 +102,7 @@
     </div>
     
     
-    <div id="predefined-questions-container" class="predefined-questions text-center mb-5 col-lg-12">
+    <div id="predefined-questions-container" class="predefined-questions text-center mb-2 col-lg-12">
         <div class="grid-container">
             {% for prompts in all_prompts %}
             <button class="predefined-question-btn" data-question="{{prompts.prompt}}">{{prompts.prompt}}</button>
@@ -115,6 +117,7 @@
                 <div class="input-with-button">
                     <input type="text" id="chat-input" spellcheck="false" placeholder="Message American High School Academy AI Teacher…" required />
                     <button id="send-btn" class="material-symbols-rounded">send</button> 
+                    <button id="reset-btn" class="" style='font-size:14px'>⟳</button> 
                 </div>
             </div>
             <div class="typing-controls">
@@ -230,6 +233,7 @@
     const chatLog = $('#chat-log');
     const userInput = $('#chat-input');
     const sendButton = $('#send-btn');
+    const resetButton = $('#reset-btn');
     const predefinedQuestionsContainer = $('#predefined-questions-container');
 
     function appendMessage(message, sender, emoji) {
@@ -381,6 +385,11 @@
             }
         });
     }
+    // Event listener for reset button
+    resetButton.click(function () {
+        chatLog.empty(); // Clear the chat log content
+        location.reload(); // Reload the page
+    });
 });
 
 

@@ -32,9 +32,7 @@ from langchain.prompts import PromptTemplate
 # from langchain.text_splitter import RecursiveCharacterTextSplitter
 # from langchain.document_loaders import PyPDFLoader,PyPDFDirectoryLoader
 
-OPENAI_API_KEY= "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"
 
-openai.api_key = OPENAI_API_KEY
 
 custom_promp = Custom_Prompts.objects.all()
 # get  1st custom prompt
@@ -376,21 +374,46 @@ def question_answering(request):
 
 
 
+from collections import deque
+# def ask_openai(message):
+#     response = openai.ChatCompletion.create(
+#         model = "gpt-4",
+#         messages=[
+#             {"role": "system", "content": "As the 'American High School Academy AI Teacher Guider', you can provide me with all the information in detail. you can also provide me a Image Prompt into  this formate 'Prompt:---'."},
+#             {"role": "user", "content": message},
+#         ],
+#         temperature = 0.9,
+#         max_tokens=4000,
+#     )
+    
+#     answer = response.choices[0].message.content
+#     # replace /n with  <br>
+#     answer = answer.replace("\n", "<br>")
+#     print(answer)
+#     return answer
+    
+chat_history = deque(maxlen=5)  # Keep the last 10 messages
 
 def ask_openai(message):
+    # Add the current user message to the chat history
+    chat_history.append({"role": "user", "content": message})
+
     response = openai.ChatCompletion.create(
-        model = "gpt-4",
+        model="gpt-4",
         messages=[
-            {"role": "system", "content": "As the 'American High School Academy AI Teacher Guider', you can provide me with all the information in detail. you can also provide me a Image Prompt into  this formate 'Prompt:---'."},
-            {"role": "user", "content": message},
+            {"role": "system", "content": "As the 'American High School Academy AI Teacher Guider', you can provide me with all the information in detail."},
+            *chat_history,  # Unpack the chat history
         ],
-        temperature = 0.9,
+        temperature=0.9,
         max_tokens=4000,
     )
-    
+
     answer = response.choices[0].message.content
-    # replace /n with  <br>
     answer = answer.replace("\n", "<br>")
+
+    # Add the assistant's response to the chat history
+    chat_history.append({"role": "assistant", "content": answer})
+
     print(answer)
     return answer
 

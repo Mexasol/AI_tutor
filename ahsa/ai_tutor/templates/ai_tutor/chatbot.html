@@ -115,6 +115,7 @@ American High School Academy AI Teacher
                 <div class="input-with-button">
                     <input type="text" id="chat-input" spellcheck="false" placeholder="Message American High School Academy AI Teacher…" required />
                     <button id="send-btn" class="material-symbols-rounded">send</button> 
+                    <button id="reset-btn" class="" style='font-size:14px'>⟳</button>
                 </div>
             </div>
             <div class="typing-controls">
@@ -384,6 +385,10 @@ American High School Academy AI Teacher
             }
         });
     }
+    resetButton.click(function () {
+        chatLog.empty(); // Clear the chat log content
+        location.reload(); // Reload the page
+    });
 });
     </script>
     
