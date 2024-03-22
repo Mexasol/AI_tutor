@@ -19,7 +19,7 @@
             {% if user.is_authenticated %}
             <div class="alert alert-success alert-dismissible" style="color:#000;background-image: radial-gradient(at center center, #ffdc7c 0%, #dda200 100%);border: none;">
                 <a href="#" class="close text-decoration-none" data-dismiss="alert" aria-label="close">&times;</a>
-                Welcome to our Website <b> {{ request.user }}</b>
+                Welcome to Yourstudybuddy <b> {{ request.user.first_name }}</b>
             </div>
             {% endif %}
         </div>
