@@ -26,10 +26,12 @@ SECRET_KEY = 'django-insecure-$_5#sc^au$i2j-!wp+$3p)+0%bb+=bw*lj0s*-&!865$m(9&#^
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["*"]
+# settings.py
 
-
-# Application definition
+ALLOWED_HOSTS = ["yourstudybuddy.bot"]
+CSRF_TRUSTED_ORIGINS = ["https://yourstudybuddy.bot"]
+CSRF_ALLOWED_ORIGINS = ["https://yourstudybuddy.bot"]
+CORS_ORIGINS_WHITELIST = ["https://yourstudybuddy.bot"]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -39,22 +41,26 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'ai_tutor',
-    "corsheaders",
+    'corsheaders',  # Include 'corsheaders' app in your INSTALLED_APPS
     'login_history',
     'whitenoise.runserver_nostatic',
-    
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'corsheaders.middleware.CorsMiddleware',  # Place CorsMiddleware before CsrfViewMiddleware
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware'
 ]
+
+
+SESSION_COOKIE_AGE = 1800
+SESSION_SAVE_EVERY_REQUEST = True
 
 ROOT_URLCONF = 'ahsa.urls'
 
@@ -98,8 +104,7 @@ DATABASES = {
 #     }   
 # }
 
-SESSION_COOKIE_AGE = 300
-SESSION_SAVE_EVERY_REQUEST = True
+
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -131,7 +136,7 @@ USE_I18N = True
 
 USE_TZ = True
 
-CORS_ORIGIN_ALLOW_ALL = True
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
